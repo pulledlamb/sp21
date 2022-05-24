@@ -4,12 +4,12 @@ import edu.princeton.cs.algs4.Stopwatch;
 
 public class TimeLinkedListDeque {
     public static class TimeSLList {
-        static final int m = 10000;
-        private static void printTimingTable(LinkedListDeque<Integer> Ns, LinkedListDeque<Double> times, LinkedListDeque<Integer> opCounts) {
+        static final int M = 10000;
+        private static void printTimingTable(LinkedListDeque<Integer> nS, LinkedListDeque<Double> times, LinkedListDeque<Integer> opCounts) {
             System.out.printf("%12s %12s %12s %12s\n", "N", "time (s)", "# ops", "microsec/op");
             System.out.printf("------------------------------------------------------------\n");
-            for (int i = 0; i < Ns.size(); i += 1) {
-                int N = Ns.get(i);
+            for (int i = 0; i < nS.size(); i += 1) {
+                int N = nS.get(i);
                 double time = times.get(i);
                 int opCount = opCounts.get(i);
                 double timePerOp = time / opCount * 1e6;
@@ -24,21 +24,21 @@ public class TimeLinkedListDeque {
         public static void timeGetLast() {
             // TODO: YOUR CODE HERE
 
-            LinkedListDeque<Integer> Ns = new LinkedListDeque<>();
+            LinkedListDeque<Integer> nS = new LinkedListDeque<>();
             // size of data structure
-            Ns.addLast(1000); Ns.addLast(2000); Ns.addLast(4000); Ns.addLast(8000); Ns.addLast(16000);
-            Ns.addLast(32000); Ns.addLast(64000); Ns.addLast(128000);
+            nS.addLast(1000); nS.addLast(2000); nS.addLast(4000); nS.addLast(8000); nS.addLast(16000);
+            nS.addLast(32000); nS.addLast(64000); nS.addLast(128000);
 
             LinkedListDeque<Double> times = new LinkedListDeque<>();
             LinkedListDeque<Integer> opCount = new LinkedListDeque<>();
-            for (int i = 0; i < Ns.size(); i += 1) {
+            for (int i = 0; i < nS.size(); i += 1) {
                 LinkedListDeque<Integer> add = new LinkedListDeque<>();
-                opCount.addLast(m);
-                for (int j = 0; j < Ns.get(i); j += 1) {
+                opCount.addLast(M);
+                for (int j = 0; j < nS.get(i); j += 1) {
                     add.addLast(j);
                 }
                 Stopwatch sw = new Stopwatch();
-                for (int k = 0; k < m; k += 1) {
+                for (int k = 0; k < M; k += 1) {
                     add.removeLast();
                 }
                 double timeInSeconds = sw.elapsedTime();
@@ -47,7 +47,7 @@ public class TimeLinkedListDeque {
 
 
 
-            printTimingTable(Ns, times, opCount);
+            printTimingTable(nS, times, opCount);
         }
 
     }

@@ -140,11 +140,15 @@ public class LinkedListDequeTest {
         }
 
         assertTrue(lld1.equals(lld2));
+
+        lld2.removeLast();
+        assertFalse(lld1.equals(lld2));
+
         assertFalse(lld1.equals(lld3));
         assertFalse(lld2.equals(lld4));
     }
 
-    @Test
+/*    @Test
     public void printDequeTest() {
         LinkedListDeque<Integer> lld1 = new LinkedListDeque<>();
         for (int i = 0; i < 4; i += 1) {
@@ -152,7 +156,7 @@ public class LinkedListDequeTest {
         }
 
         assertEquals(lld1.toString(), "{3 2 1 0}");
-    }
+    }*/
 
     @Test
     public void getRecursiveTest() {
