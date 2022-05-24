@@ -185,9 +185,6 @@ public class ArrayDequeTest {
                 B.addLast(randVal);
                 //System.out.println("addLast(" + randVal + ")");
             } else if (operationNumber == 1) {
-                // size
-                int size = L.size();
-                //System.out.println("size: " + size);
                 assertEquals(L.size(), B.size());
             } else if (L.size() > 0) {
                 // getLast

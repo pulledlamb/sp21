@@ -4,8 +4,9 @@ package deque;
 import java.util.Iterator;
 
 public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
-    private static final double USAGEFACTOR = 0.25;
+    private static final double USAGEFACTOR = 0.25, EPS = 0.000001;
     private static final int RESIZEFACTOR = 2;
+    private static final int MAX = 16;
     private T[] items;
     private int size, nextFirst, nextLast;
 
@@ -20,22 +21,22 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
     /** overriding add methods, addFirst and addLast */
     @Override
     public void addFirst(T t) {
-        if (isResize()) {
-            resize(size * RESIZEFACTOR);
+        if (nextFirst == nextLast) {
+            resize(items.length * RESIZEFACTOR);
         }
         items[nextFirst] = t;
         size += 1;
-        updateNextFirst(-1);
+        updateNext(0, -1);
     }
 
     @Override
     public void addLast(T t) {
-        if (isResize()) {
-            resize(size * RESIZEFACTOR);
+        if (nextFirst == nextLast) {
+            resize(items.length * RESIZEFACTOR);
         }
         items[nextLast] = t;
         size += 1;
-        updateNextLast(1);
+        updateNext(1, 1);
     }
 
     /** overriding remove methods, removeLast and removeFirst */
@@ -47,11 +48,12 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         T t = getLast();
 
         items[nextLast] = null;
-        updateNextLast(-1);
+        updateNext(1, -1);
 
         size -= 1;
-        if (isResize()) {
-            resize(size / RESIZEFACTOR);
+        double ratio = Math.abs(size() / items.length * 1.0 - USAGEFACTOR);
+        if (ratio < EPS && items.length >= MAX) {
+            resize(items.length / RESIZEFACTOR);
         }
         return t;
     }
@@ -64,11 +66,12 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         T t = getFirst();
 
         items[nextFirst] = null;
-        updateNextFirst(1);
+        updateNext(0, 1);
 
         size -= 1;
-        if (isResize()) {
-            resize(size / RESIZEFACTOR);
+        double ratio = Math.abs(size() / items.length * 1.0 - USAGEFACTOR);
+        if (ratio < EPS && items.length >= MAX) {
+            resize(items.length / RESIZEFACTOR);
         }
         return t;
     }
@@ -83,23 +86,12 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         return items[mod(nextLast - 1, items.length)];
     }
 
-    private boolean isResize() {
-        double ratio = size / items.length * 1.0;
-        return nextFirst == nextLast || ratio < USAGEFACTOR;
-    }
-
-    /** update nextFirst
-     *  -1 for add, 1 for remove
-     * */
-    private void updateNextFirst(int i) {
-        nextFirst = mod(nextFirst + i, items.length);
-    }
-
-    /** update nextLast
-     *  1 for add, -1 for remove
-     *  */
-    private void updateNextLast(int i) {
-        nextLast = mod(nextLast + i, items.length);
+    private void updateNext(int k, int i) {
+        if (k == 0) {
+            nextFirst = mod(nextFirst + i, items.length);
+        } else if (k == 1) {
+            nextLast = mod(nextLast + i, items.length);
+        }
     }
 
     private static int mod(int v, int m) {
@@ -191,16 +183,18 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         if (nextFirst >= nextLast) {
             int n = items.length - (1 + nextFirst);
             int start = mod(nextFirst + 1, items.length);
-            int end = mod(nextLast - 1, items.length);
 
             System.arraycopy(items, start, rez, 1, n);
             System.arraycopy(items, 0, rez, n + 1, size() - n);
         } else {
-            System.arraycopy(items, nextFirst + 1, rez, 1, size());
+            System.out.print(nextFirst + " " + nextLast + " ");
+            System.out.print(size + " " + items.length);
+            int start = mod(nextFirst + 1, items.length);
+            System.arraycopy(items,  start, rez, 1, size());
         }
 
         nextFirst = 0;
-        nextLast = size + 1;
+        nextLast = size() + 1;
         items = rez;
     }
 
