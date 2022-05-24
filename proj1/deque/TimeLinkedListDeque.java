@@ -5,7 +5,8 @@ import edu.princeton.cs.algs4.Stopwatch;
 public class TimeLinkedListDeque {
     public static class TimeSLList {
         static final int M = 10000;
-        private static void printTimingTable(LinkedListDeque<Integer> nS, LinkedListDeque<Double> times, LinkedListDeque<Integer> opCounts) {
+        private static void printTimingTable(LinkedListDeque<Integer> nS, LinkedListDeque<Double> times,
+                                             LinkedListDeque<Integer> opCounts) {
             System.out.printf("%12s %12s %12s %12s\n", "N", "time (s)", "# ops", "microsec/op");
             System.out.printf("------------------------------------------------------------\n");
             for (int i = 0; i < nS.size(); i += 1) {
@@ -22,12 +23,12 @@ public class TimeLinkedListDeque {
         }
 
         public static void timeGetLast() {
-            // TODO: YOUR CODE HERE
-
             LinkedListDeque<Integer> nS = new LinkedListDeque<>();
             // size of data structure
-            nS.addLast(1000); nS.addLast(2000); nS.addLast(4000); nS.addLast(8000); nS.addLast(16000);
-            nS.addLast(32000); nS.addLast(64000); nS.addLast(128000);
+            nS.addLast(1000); nS.addLast(2000);
+            nS.addLast(4000); nS.addLast(8000);
+            nS.addLast(16000); nS.addLast(32000);
+            nS.addLast(64000); nS.addLast(128000);
 
             LinkedListDeque<Double> times = new LinkedListDeque<>();
             LinkedListDeque<Integer> opCount = new LinkedListDeque<>();
@@ -44,8 +45,6 @@ public class TimeLinkedListDeque {
                 double timeInSeconds = sw.elapsedTime();
                 times.addLast(timeInSeconds);
             }
-
-
 
             printTimingTable(nS, times, opCount);
         }

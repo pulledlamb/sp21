@@ -12,7 +12,7 @@ public class LinkedListDeque<T> implements Iterable<T>, Deque<T> {
         private Node next;
         private Node prev;
 
-        public Node(T t, Node n, Node p) {
+        Node(T t, Node n, Node p) {
             item = t;
             next = n;
             prev = p;
@@ -48,7 +48,9 @@ public class LinkedListDeque<T> implements Iterable<T>, Deque<T> {
     /** overriding remove methods, removeFirst and removeLast */
     @Override
     public T removeFirst() {
-        if (size == 0) { return null; }
+        if (size == 0) {
+            return null;
+        }
         T first = sentinel.next.item;
         Node curr = sentinel.next.next;
 
@@ -60,7 +62,9 @@ public class LinkedListDeque<T> implements Iterable<T>, Deque<T> {
 
     @Override
     public T removeLast() {
-        if (size == 0) { return null; }
+        if (size == 0) {
+            return null;
+        }
         T last = sentinel.prev.item;
         Node curr = sentinel.prev.prev;
 
@@ -117,7 +121,7 @@ public class LinkedListDeque<T> implements Iterable<T>, Deque<T> {
     private class LinkedListDequeIterator implements Iterator<T>  {
         private int pos;
 
-        public LinkedListDequeIterator() {
+        LinkedListDequeIterator() {
             pos = 0;
         }
 
@@ -155,11 +159,11 @@ public class LinkedListDeque<T> implements Iterable<T>, Deque<T> {
         if (other == null) {
             return false;
         }
-        if (!(other instanceof LinkedListDeque)) {
+        if (!(other instanceof Deque)) {
             return false;
         }
 
-        LinkedListDeque<T> o = (LinkedListDeque<T>) other;
+        Deque<T> o = (Deque) other;
         if (o.size() != size()) {
             return false;
         }

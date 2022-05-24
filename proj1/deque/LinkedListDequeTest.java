@@ -131,15 +131,21 @@ public class LinkedListDequeTest {
         LinkedListDeque<Integer> lld1 = new LinkedListDeque<>();
         LinkedListDeque<Integer> lld2 = new LinkedListDeque<>();
         LinkedListDeque<Integer> lld3 = new LinkedListDeque<>();
+
+        ArrayDeque<Integer> ard1 = new ArrayDeque<>();
+
         LinkedListDeque<String> lld4 = new LinkedListDeque<>();
+
         for (int i = 0; i < 4; i += 1) {
             lld1.addLast(i);
+            ard1.addLast(i);
             lld2.addLast(i);
             lld3.addFirst(i * 6);
             lld4.addFirst("ymca");
         }
 
         assertTrue(lld1.equals(lld2));
+        assertTrue(lld1.equals(ard1));
 
         lld2.removeLast();
         assertFalse(lld1.equals(lld2));

@@ -4,10 +4,10 @@ import edu.princeton.cs.algs4.StdAudio;
 import edu.princeton.cs.algs4.StdDraw;
 
 public class GuitarHero {
-    public String keyboard = "q2we4r5ty7u8i9op-[=zxdcfvgbnjmk,.;/' ";
+    String keyboard = "q2we4r5ty7u8i9op-[=zxdcfvgbnjmk,.;/' ";
     public static final double CONCERT_A = 440.0;
     private static final int G = 37;
-    public GuitarString[] gstr = new GuitarString[G];
+    GuitarString[] gstr = new GuitarString[G];
 
     public GuitarHero() {
         for (int i = 0; i < G; i += 1) {

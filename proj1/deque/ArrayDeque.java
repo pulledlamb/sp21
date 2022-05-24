@@ -41,33 +41,35 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
     /** overriding remove methods, removeLast and removeFirst */
     @Override
     public T removeLast() {
-        if (size == 0) { return null; }
+        if (size == 0) {
+            return null;
+        }
         T t = getLast();
 
         items[nextLast] = null;
         updateNextLast(-1);
 
+        size -= 1;
         if (isResize()) {
             resize(size / RESIZEFACTOR);
         }
-
-        size -= 1;
         return t;
     }
 
     @Override
     public T removeFirst() {
-        if (size == 0) { return null; }
+        if (size == 0) {
+            return null;
+        }
         T t = getFirst();
 
         items[nextFirst] = null;
         updateNextFirst(1);
 
+        size -= 1;
         if (isResize()) {
             resize(size / RESIZEFACTOR);
         }
-
-        size -= 1;
         return t;
     }
 
@@ -82,7 +84,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
     }
 
     private boolean isResize() {
-        double ratio = size / items.length + 1.0;
+        double ratio = size / items.length * 1.0;
         return nextFirst == nextLast || ratio < USAGEFACTOR;
     }
 
@@ -163,11 +165,11 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         if (other == null) {
             return false;
         }
-        if (!(other instanceof ArrayDeque)) {
+        if (!(other instanceof Deque)) {
             return false;
         }
 
-        ArrayDeque<T> o = (ArrayDeque<T>) other;
+        Deque<T> o = (Deque) other;
         if (o.size() != size()) {
             return false;
         }
@@ -206,7 +208,9 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
     private class ArrayDequeIterator implements Iterator<T> {
         private int pos;
 
-        public ArrayDequeIterator() { pos = 0; }
+        ArrayDequeIterator() {
+            pos = 0;
+        }
 
         @Override
         public boolean hasNext() {
