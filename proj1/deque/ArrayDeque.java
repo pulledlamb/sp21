@@ -4,7 +4,7 @@ package deque;
 import java.util.Iterator;
 
 public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
-    private static final double USAGEFACTOR = 0.25, EPS = 0.000001;
+    private static final double USAGEFACTOR = 0.25;
     private static final int RESIZEFACTOR = 2;
     private static final int MAX = 16;
     private T[] items;
@@ -51,8 +51,8 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         updateNext(1, -1);
 
         size -= 1;
-        double ratio = Math.abs(size() / items.length * 1.0 - USAGEFACTOR);
-        if (ratio < EPS && items.length >= MAX) {
+        double ratio = size() * 1.0 / items.length - USAGEFACTOR;
+        if (ratio < 0 && items.length >= MAX) {
             resize(items.length / RESIZEFACTOR);
         }
         return t;
@@ -69,8 +69,8 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         updateNext(0, 1);
 
         size -= 1;
-        double ratio = Math.abs(size() / items.length * 1.0 - USAGEFACTOR);
-        if (ratio < EPS && items.length >= MAX) {
+        double ratio = size()  * 1.0/ items.length - USAGEFACTOR;
+        if (ratio < 0 && items.length >= MAX) {
             resize(items.length / RESIZEFACTOR);
         }
         return t;
@@ -106,7 +106,9 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
     /** Gets the ith item in the list (0 is the front). */
     @Override
     public T get(int index) {
-        if (index < 0 || index >= size) { return null; }
+        if (index < 0 || index >= size) {
+            return null;
+        }
         return items[mod(nextFirst + index + 1, items.length)];
     }
 

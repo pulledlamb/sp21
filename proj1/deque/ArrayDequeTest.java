@@ -151,13 +151,13 @@ public class ArrayDequeTest {
     }
 
     @Test
-    public void removeFirstTest() {
+    public void removeResizeTest() {
         ArrayDeque<Integer> lld1 = new ArrayDeque<>();
-        for (int i = 0; i < 4; i += 1) {
+        for (int i = 0; i < 25; i += 1) {
             lld1.addFirst(i);
         }
 
-        assertEquals(3, (double) lld1.removeFirst(), 0.0);
+        lld1.removeFirst();
     }
 
     @Test

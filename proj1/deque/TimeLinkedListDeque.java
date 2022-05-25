@@ -5,7 +5,8 @@ import edu.princeton.cs.algs4.Stopwatch;
 public class TimeLinkedListDeque {
     public static class TimeSLList {
         static final int M = 10000;
-        private static void printTimingTable(LinkedListDeque<Integer> nS, LinkedListDeque<Double> times,
+        private static void printTimingTable(LinkedListDeque<Integer> nS,
+                                             LinkedListDeque<Double> times,
                                              LinkedListDeque<Integer> opCounts) {
             System.out.printf("%12s %12s %12s %12s\n", "N", "time (s)", "# ops", "microsec/op");
             System.out.printf("------------------------------------------------------------\n");
