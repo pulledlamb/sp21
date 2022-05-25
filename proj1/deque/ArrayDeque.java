@@ -12,7 +12,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
 
     /** empty constructor */
     public ArrayDeque() {
-        items = (T[]) new Object[100];
+        items = (T[]) new Object[14];
         size = 0;
         nextFirst = 0;
         nextLast = 1;
@@ -69,7 +69,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         updateNext(0, 1);
 
         size -= 1;
-        double ratio = size()  * 1.0/ items.length - USAGEFACTOR;
+        double ratio = size()  * 1.0 / items.length - USAGEFACTOR;
         if (ratio < 0 && items.length >= MAX) {
             resize(items.length / RESIZEFACTOR);
         }
@@ -113,7 +113,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
     }
 
     @Override
-    public void printDeque(){
+    public void printDeque() {
         System.out.print("{");
         for (T item : this) {
             System.out.print(item + " ");
@@ -189,10 +189,8 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
             System.arraycopy(items, start, rez, 1, n);
             System.arraycopy(items, 0, rez, n + 1, size() - n);
         } else {
-            System.out.print(nextFirst + " " + nextLast + " ");
-            System.out.print(size + " " + items.length);
             int start = mod(nextFirst + 1, items.length);
-            System.arraycopy(items,  start, rez, 1, size());
+            System.arraycopy(items, start, rez, 1, size());
         }
 
         nextFirst = 0;
