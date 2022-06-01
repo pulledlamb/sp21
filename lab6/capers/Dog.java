@@ -10,7 +10,7 @@ import static capers.Utils.*;
 public class Dog implements Serializable{
 
     /** Folder that dogs live in. */
-    static final File DOG_FOLDER = Utils.join(CapersRepository.CWD, "dogs");
+    static final File DOG_FOLDER = Utils.join(CapersRepository.CAPERS_FOLDER, "dogs");
 
     /** Age of dog. */
     private int age;
@@ -42,13 +42,11 @@ public class Dog implements Serializable{
         Dog d;
         File inFile = Utils.join(DOG_FOLDER, name);
         try {
-            ObjectInputStream inp =
-                    new ObjectInputStream(new FileInputStream(inFile));
-            d = (Dog) inp.readObject();
-            inp.close();
-        } catch (IOException | ClassNotFoundException excp) {
-            d = null;
+            inFile.createNewFile();
+        } catch (IOException excp) {
+            System.out.println("File story already exists.");
         }
+        d = Utils.readObject(inFile, Dog.class);
         return d;
     }
 
@@ -68,13 +66,11 @@ public class Dog implements Serializable{
         // TODO (hint: don't forget dog names are unique)
         File outFile = Utils.join(DOG_FOLDER, this.name);
         try {
-            ObjectOutputStream out =
-                    new ObjectOutputStream(new FileOutputStream(outFile));
-            out.writeObject(this);
-            out.close();
+            outFile.createNewFile();
         } catch (IOException excp) {
-
+            System.out.println("File story already exists.");
         }
+        Utils.writeObject(outFile, this);
     }
 
     @Override
