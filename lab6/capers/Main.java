@@ -1,6 +1,7 @@
 package capers;
 
 import java.io.File;
+import java.util.Arrays;
 
 import static capers.Utils.*;
 
@@ -52,11 +53,22 @@ public class Main {
             break;
         case "dog":
             validateNumArgs("dog", args, 4);
-            // TODO: make a dog
+
+            int age;
+            try {
+                age = Integer.parseInt(args[3]);
+            }
+            catch (NumberFormatException e) {
+                age = 0;
+                String s = String.format("Invalid argument for dog's age: %s.", args[3]);
+                System.out.println(s);
+            }
+            CapersRepository.makeDog(args[1], args[2], age);
             break;
         case "birthday":
             validateNumArgs("birthday", args, 2);
-            // TODO: celebrate this dog's birthday
+
+            CapersRepository.celebrateBirthday(args[1]);
             break;
         default:
             exitWithError(String.format("Unknown command: %s", args[0]));
