@@ -46,6 +46,7 @@ public class TestBSTMapExtra {
         q.put("d","a");
         q.put("e","a"); // a b c d e
         assertTrue(null != q.remove("c"));
+        assertEquals(4, q.size());
         assertFalse(q.containsKey("c"));
         assertTrue(q.containsKey("a"));
         assertTrue(q.containsKey("b"));
@@ -65,11 +66,13 @@ public class TestBSTMapExtra {
         q.put("d","a");
         q.put("e","a");                         // a b c d e
         assertTrue(null != q.remove("e"));      // a b c d
+        assertEquals(4, q.size());
         assertTrue(q.containsKey("a"));
         assertTrue(q.containsKey("b"));
         assertTrue(q.containsKey("c"));
         assertTrue(q.containsKey("d"));
         assertTrue(null != q.remove("c"));      // a b d
+        assertEquals(3, q.size());
         assertTrue(q.containsKey("a"));
         assertTrue(q.containsKey("b"));
         assertTrue(q.containsKey("d"));
