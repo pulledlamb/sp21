@@ -52,7 +52,8 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
      */
     public MyHashMap(int initialSize, double maxLoad) {
         if (initialSize < 1 || maxLoad <= 0.0) {
-            throw new IllegalArgumentException("initial size must be greater than 1 or max load greater than 0.");
+            throw new IllegalArgumentException("initial size must be greater than 1 " +
+                    "or max load greater than 0.");
         }
         buckets = new Collection[initialSize];
         for (int i = 0; i < initialSize; i++) {
@@ -89,7 +90,7 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
      * OWN BUCKET DATA STRUCTURES WITH THE NEW OPERATOR!
      */
     protected Collection<Node> createBucket() {
-         return new ArrayList<>();
+        return new ArrayList<>();
     }
 
     /**
@@ -155,15 +156,15 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
                 }
             }
         } else {
-             if (buckets[h] == null) {
-                 buckets[h] = createBucket();
-             }
-             buckets[h].add(createNode(key, value));
-             size += 1;
-             set.add(key);
-             if (size * 1.0 / initialSize >= loadFactor) {
-                 resize(initialSize * MULFACTOR);
-             }
+            if (buckets[h] == null) {
+                buckets[h] = createBucket();
+            }
+            buckets[h].add(createNode(key, value));
+            size += 1;
+            set.add(key);
+            if (size * 1.0 / initialSize >= loadFactor) {
+                resize(initialSize * MULFACTOR);
+            }
         }
     }
 
