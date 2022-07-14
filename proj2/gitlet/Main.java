@@ -1,5 +1,7 @@
 package gitlet;
 
+import java.io.File;
+
 /** Driver class for Gitlet, a subset of the Git version-control system.
  *  @author TODO
  */
@@ -9,16 +11,61 @@ public class Main {
      *  <COMMAND> <OPERAND1> <OPERAND2> ... 
      */
     public static void main(String[] args) {
-        // TODO: what if args is empty?
+        if (args.length == 0) {
+            throw new GitletException("Please enter a command.");
+        }
         String firstArg = args[0];
+        Repository repo = new Repository();
         switch(firstArg) {
             case "init":
-                // TODO: handle the `init` command
+                validateNumArgs("init", args, 1);
+                repo.init();
                 break;
             case "add":
-                // TODO: handle the `add [filename]` command
+                validateNumArgs("add", args, 2);
+                File f = new File(args[1]);
+                if (!f.exists()) {
+                    throw new GitletException("File does not exist.");
+                }
+                repo.add(args[1]);
                 break;
-            // TODO: FILL THE REST IN
+            case "commit":
+                validateNumArgs("commit", args, 2);
+                if (args[1].equals("") || args[1].isBlank()) {
+                    throw new GitletException("Please enter a commit message.");
+                }
+                repo.commit(args[1]);
+                break;
+            case "checkout":
+                if (args.length == 3) {
+                    repo.checkout(args[2]);
+                } else if (args.length == 4) {
+                    repo.checkout(args[1], args[3]);
+                } else {
+                    throw new GitletException("Invalid number of arguments for: checkout.");
+                }
+                break;
+            case "log":
+                validateNumArgs("log", args, 1);
+                repo.log();
+                break;
+            default:
+                throw new GitletException("No command with that name exists");
+        }
+    }
+
+    /**
+     * Checks the number of arguments versus the expected number,
+     * throws a RuntimeException if they do not match.
+     *
+     * @param cmd Name of command you are validating
+     * @param args Argument array from command line
+     * @param n Number of expected arguments
+     */
+    public static void validateNumArgs(String cmd, String[] args, int n) {
+        if (args.length != n) {
+            throw new GitletException(
+                    String.format("Invalid number of arguments for: %s.", cmd));
         }
     }
 }
