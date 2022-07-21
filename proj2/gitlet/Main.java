@@ -25,14 +25,16 @@ public class Main {
                 validateNumArgs("add", args, 2);
                 File f = new File(args[1]);
                 if (!f.exists()) {
-                    throw new GitletException("File does not exist.");
+                    System.out.println("File does not exist.");
+                    return;
                 }
                 repo.add(args[1]);
                 break;
             case "commit":
                 validateNumArgs("commit", args, 2);
                 if (args[1].equals("") || args[1].isBlank()) {
-                    throw new GitletException("Please enter a commit message.");
+                    System.out.println("Please enter a commit message.");
+                    return;
                 }
                 repo.commit(args[1]);
                 break;
@@ -70,6 +72,10 @@ public class Main {
             case "branch":
                 validateNumArgs("branch", args, 2);
                 repo.branch(args[1]);
+                break;
+            case "rm-branch":
+                validateNumArgs("rm-branch", args, 2);
+                repo.removeBranch(args[1]);
                 break;
             case "reset":
                 validateNumArgs("reset", args, 2);

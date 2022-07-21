@@ -75,7 +75,7 @@ public class Repository {
 
     public void init() {
         if (GITLET_DIR.exists()) {
-            throw new GitletException("A Gitlet version-control system "
+            System.out.println("A Gitlet version-control system "
                     + "already exists in the current directory.");
         }
         GITLET_DIR.mkdir();
@@ -95,7 +95,7 @@ public class Repository {
         File f = new File(filename);
         Blob b = new Blob(filename, CWD.getPath());
         if (!f.exists()) {
-            throw new GitletException("File does not exist.");
+            System.out.println("File does not exist.");
         }
 
         Commit curr = commitTree.get(head);
@@ -122,7 +122,7 @@ public class Repository {
             index.removedFiles.put(filename, b);
             restrictedDelete(filename);
         } else {
-            throw new GitletException("No reason to remove the file");
+            System.out.println("No reason to remove the file");
         }
     }
 
@@ -130,7 +130,8 @@ public class Repository {
         Commit parCommit = commitTree.get(head);
 
         if (index.stagedFiles.isEmpty()) {
-            throw new GitletException("No changes added to the commit");
+            System.out.println("No changes added to the commit");
+            return;
         }
 
         HashMap<String, Blob> blbs = new HashMap<>(parCommit.parentBlobs);
@@ -152,7 +153,8 @@ public class Repository {
 
     public void branch(String branchName) {
         if (branchTree.containsKey(branchName)) {
-            throw new GitletException("A branch with name already exists.");
+            System.out.println("A branch with name already exists.");
+            return;
         }
         Branch coolBeans = new Branch(branchName, head);
         branchTree.put(branchName, coolBeans);
@@ -201,11 +203,13 @@ public class Repository {
     public void checkout(String id, String filename) {
         String shortId = id.substring(0, 6);
         if (!commitTree.containsKey(shortId)) {
-            throw new GitletException("No commit with that id exists.");
+            System.out.println("No commit with that id exists.");
+            return;
         }
         Commit prev = commitTree.get(shortId);
         if (!prev.blobs.containsKey(filename)) {
-            throw new GitletException("File does not exist in that commit.");
+            System.out.println("File does not exist in that commit.");
+            return;
         }
 
         byte[] contents = prev.blobs.get(filename).getContents();
@@ -215,10 +219,12 @@ public class Repository {
 
     public void checkout(int n, String branchname) {
         if (!branchTree.containsKey(branchname)) {
-            throw new GitletException("No such branch exists.");
+            System.out.println("No such branch exists.");
+            return;
         }
         if (branchname.equals(master)) {
-            throw new GitletException("No need to checkout the current branch.");
+            System.out.println("No need to checkout the current branch.");
+            return;
         }
 
         String h = branchTree.get(branchname).getHead();
@@ -228,8 +234,9 @@ public class Repository {
 
         for (Blob b : headCommit.blobs.values()) {
             if (!curr.blobs.containsValue(b)) {
-                throw new GitletException("There is an untracked file in the way; delete"
+                System.out.println("There is an untracked file in the way; delete"
                         + "it, or add and commit it first.");
+                return;
             }
             byte[] contents = b.getContents();
             writeContents(join(CWD.getPath(), b.getFilename()), contents);
@@ -253,10 +260,12 @@ public class Repository {
 
     public void removeBranch(String branchName) {
         if (!branchTree.containsKey(branchName)) {
-            throw new GitletException("A branch with that name does not exist.");
+            System.out.println("A branch with that name does not exist.");
+            return;
         }
         if (branchName.equals(master)) {
-            throw new GitletException("Cannot remove the current branch.");
+            System.out.println("Cannot remove the current branch.");
+            return;
         }
 
         branchTree.remove(branchName);
@@ -266,13 +275,14 @@ public class Repository {
 
 
     public void reset(String id) {
-        HashSet<String> fileList = (HashSet<String>) commitTree.get(id).blobs.keySet();
+        String sid = id.substring(0, 6);
+        HashSet<String> fileList = (HashSet<String>) commitTree.get(sid).blobs.keySet();
 
         for (String filename : fileList) {
             checkout(id, filename);
         }
 
-        head = id.substring(0, 6);
+        head = sid;
 
         serialize();
     }
@@ -283,7 +293,8 @@ public class Repository {
         String split = curr.getSplitCommit();
 
         if (split.equals(udda.getHead())) {
-            throw new GitletException("Given branch is an ancestor of the current branch");
+            System.out.println("Given branch is an ancestor of the current branch");
+            return;
         }
 
         if (split.equals(curr.getHead())) {
@@ -293,7 +304,8 @@ public class Repository {
         }
 
         if (!index.stagedFiles.isEmpty() || !index.removedFiles.isEmpty()) {
-            throw new GitletException("You have uncommitted changes.");
+            System.out.println("You have uncommitted changes.");
+            return;
         }
 
         merge(commitTree.get(curr.getHead()), commitTree.get(udda.getHead()),
@@ -396,7 +408,7 @@ public class Repository {
             }
         }
         if (!found) {
-            throw new GitletException("Found no commit with that message.");
+            System.out.println("Found no commit with that message.");
         }
     }
 
