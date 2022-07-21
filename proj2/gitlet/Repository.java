@@ -114,12 +114,12 @@ public class Repository {
         serialize();
     }
 
-    public void remove(String filename) {
+    public void rm(String filename) {
+        Commit c = commitTree.get(head);
         if (index.stagedFiles.containsKey(filename)) {
             index.stagedFiles.remove(filename);
-        } else if (commitTree.containsKey(filename)) {
-            Blob b = new Blob(filename, CWD.getPath());
-            index.removedFiles.put(filename, b);
+        } else if (c.blobs.containsKey(filename)) {
+            index.removedFiles.put(filename, c.blobs.get(filename));
             restrictedDelete(filename);
         } else {
             System.out.println("No reason to remove the file");
@@ -153,7 +153,7 @@ public class Repository {
 
     public void branch(String branchName) {
         if (branchTree.containsKey(branchName)) {
-            System.out.println("A branch with name already exists.");
+            System.out.println("A branch with that name already exists.");
             return;
         }
         Branch coolBeans = new Branch(branchName, head);
@@ -234,7 +234,7 @@ public class Repository {
 
         for (Blob b : headCommit.blobs.values()) {
             if (!curr.blobs.containsValue(b)) {
-                System.out.println("There is an untracked file in the way; delete"
+                System.out.println("There is an untracked file in the way; delete "
                         + "it, or add and commit it first.");
                 return;
             }
@@ -276,7 +276,7 @@ public class Repository {
 
     public void reset(String id) {
         String sid = id.substring(0, 6);
-        HashSet<String> fileList = (HashSet<String>) commitTree.get(sid).blobs.keySet();
+        Set<String> fileList = commitTree.get(sid).blobs.keySet();
 
         for (String filename : fileList) {
             checkout(id, filename);
@@ -326,7 +326,7 @@ public class Repository {
                     writeContents(join(CWD, f), contents);
                     index.stagedFiles.put(f, uBlob.get(f));
                 } else {
-                    remove(f);
+                    rm(f);
                 }
             } else if (!cMod && !uMod) {
                 if (!Arrays.equals(cBlob.get(f).getContents(), uBlob.get(f).getContents())) {

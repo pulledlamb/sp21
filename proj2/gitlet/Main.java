@@ -86,7 +86,8 @@ public class Main {
                 repo.merge(args[1]);
                 break;
             default:
-                throw new GitletException("No command with that name exists");
+                System.out.println("No command with that name exists");
+                break;
         }
     }
 
