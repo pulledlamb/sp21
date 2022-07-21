@@ -11,9 +11,6 @@ import java.util.HashMap;
 import static gitlet.Utils.sha1;
 
 /** Represents a gitlet commit object.
- *  TODO: It's a good idea to give a description here of what else this Class
- *  does at a high level.
- *
  *  @author shidan
  */
 public class Commit implements Serializable {
@@ -44,7 +41,8 @@ public class Commit implements Serializable {
     DateFormat outDate = new SimpleDateFormat("EEE MMM dd HH:mm:ss yyyy Z");
     DateFormat inDate = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy");
 
-    public Commit(String msg, HashMap<String, Blob> blbs, HashMap<String, Blob> parblbs, String parSha) {
+    public Commit(String msg, HashMap<String, Blob> blbs, HashMap<String, Blob> parblbs,
+                  String parSha) {
         this.msg = msg;
         this.blobs = blbs;
         this.parentBlobs = parblbs;

@@ -1,10 +1,7 @@
 package gitlet;
 
-import org.checkerframework.checker.units.qual.A;
-
 import java.io.File;
 import java.util.*;
-
 import static gitlet.Utils.*;
 
 /** Represents a gitlet repository.
@@ -41,7 +38,6 @@ public class Repository {
     public static final File STAGE_DIR = join(CWD, ".index");
     public static final String MASTER = "master";
 
-    /* TODO: fill in the rest of this class. */
     /** constructor */
     @SuppressWarnings("unchecked")
     public Repository() {
@@ -79,8 +75,8 @@ public class Repository {
 
     public void init() {
         if (GITLET_DIR.exists()) {
-            throw new GitletException("A Gitlet version-control system " +
-                    "already exists in the current directory.");
+            throw new GitletException("A Gitlet version-control system "
+                    + "already exists in the current directory.");
         }
         GITLET_DIR.mkdir();
         Commit initCmt = new Commit();
@@ -105,8 +101,8 @@ public class Repository {
         Commit curr = commitTree.get(head);
         HashMap<String, Blob> currBlob = curr.blobs;
 
-        if (currBlob.containsKey(filename) &&
-                currBlob.get(filename).getSha().equals(b.getSha())) {
+        if (currBlob.containsKey(filename)
+                && currBlob.get(filename).getSha().equals(b.getSha())) {
             index.removedFiles.remove(filename);
             serialize();
             return;
@@ -232,8 +228,8 @@ public class Repository {
 
         for (Blob b : headCommit.blobs.values()) {
             if (!curr.blobs.containsValue(b)) {
-                throw new GitletException("There is an untracked file in the way; delete" +
-                        "it, or add and commit it first.");
+                throw new GitletException("There is an untracked file in the way; delete"
+                        + "it, or add and commit it first.");
             }
             byte[] contents = b.getContents();
             writeContents(join(CWD.getPath(), b.getFilename()), contents);
@@ -300,7 +296,8 @@ public class Repository {
             throw new GitletException("You have uncommitted changes.");
         }
 
-        merge(commitTree.get(curr.getHead()), commitTree.get(udda.getHead()), commitTree.get(split), branch);
+        merge(commitTree.get(curr.getHead()), commitTree.get(udda.getHead()),
+                commitTree.get(split), branch);
     }
 
     private void merge(Commit curr, Commit udda, Commit split, String branch) {
@@ -349,7 +346,8 @@ public class Repository {
             currBlob.remove(s);
         }
 
-        Commit c = new Commit(msg, currBlob, curr.blobs, udda.blobs, curr.getShortSha(), udda.getShortSha());
+        Commit c = new Commit(msg, currBlob, curr.blobs, udda.blobs,
+                curr.getShortSha(), udda.getShortSha());
         c.setMergSha();
         head = c.getShortSha();
         branchTree.get(master).setHead(head);
