@@ -135,7 +135,7 @@ public class Repository {
             return;
         }
 
-        HashMap<String, Blob> blbs = new HashMap<>(parCommit.parentBlobs);
+        HashMap<String, Blob> blbs = new HashMap<>(parCommit.blobs);
         blbs.putAll(index.stagedFiles);
 
         for (String s : index.removedFiles.keySet()) {
@@ -233,6 +233,12 @@ public class Repository {
 
         Commit curr = commitTree.get(head);
 
+        for (String s : curr.blobs.keySet()) {
+            if (!udda.blobs.containsKey(s)) {
+                restrictedDelete(s);
+            }
+        }
+
         List<String> allFiles = plainFilenamesIn(CWD);
         if (allFiles != null) {
             for (String b : udda.blobs.keySet()) {
@@ -245,13 +251,6 @@ public class Repository {
                 writeContents(join(CWD.getPath(), b), contents);
             }
         }
-
-        for (String s : curr.blobs.keySet()) {
-            if (!udda.blobs.containsKey(s)) {
-                restrictedDelete(s);
-            }
-        }
-
         head = udda.getShortSha();
         master = branchname;
 
@@ -320,18 +319,27 @@ public class Repository {
         boolean conflict = false;
 
         for (String f : sBlob.keySet()) {
-            boolean cMod = Arrays.equals(sBlob.get(f).getContents(), cBlob.get(f).getContents()),
-                    uMod = Arrays.equals(sBlob.get(f).getContents(), uBlob.get(f).getContents());
+            boolean cMod = false, uMod = false;
+            if (!cBlob.containsKey(f)) {
+                cMod = true;
+            } else {
+                cMod = !Arrays.equals(sBlob.get(f).getContents(), cBlob.get(f).getContents());
+            }
+            if (!uBlob.containsKey(f)) {
+                uMod = true;
+            } else {
+                uMod = !Arrays.equals(sBlob.get(f).getContents(), uBlob.get(f).getContents());
+            }
 
-            if (cMod && !uMod) {
-                if (uBlob.get(f).getContents() != null) {
+            if (!cMod && uMod) {
+                if (!uBlob.containsKey(f)) {
+                    rm(f);
+                } else{
                     byte[] contents = uBlob.get(f).getContents();
                     writeContents(join(CWD, f), contents);
                     index.stagedFiles.put(f, uBlob.get(f));
-                } else {
-                    rm(f);
                 }
-            } else if (!cMod && !uMod) {
+            } else if (cMod && uMod) {
                 if (!Arrays.equals(cBlob.get(f).getContents(), uBlob.get(f).getContents())) {
                     conflictResolver(cBlob.get(f), uBlob.get(f));
                     conflict = true;
@@ -346,7 +354,7 @@ public class Repository {
             }
         }
 
-        String msg = "Merged" + branch + "into" + master;
+        String msg = "Merged " + branch + " into " + master +".";
         mergeCommit(msg, curr, udda);
         if (conflict) {
             System.out.println("Encountered a merge conflict");
