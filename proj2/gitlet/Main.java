@@ -67,7 +67,7 @@ public class Main {
                 break;
             case "rm":
                 validateNumArgs("rm", args, 2);
-                repo.remove(args[1]);
+                repo.rm(args[1]);
                 break;
             case "branch":
                 validateNumArgs("branch", args, 2);
