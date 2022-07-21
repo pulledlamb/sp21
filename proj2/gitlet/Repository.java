@@ -73,6 +73,10 @@ public class Repository {
         }
     }
 
+    public boolean initialized() {
+        return GITLET_DIR.exists();
+    }
+
     public void init() {
         if (GITLET_DIR.exists()) {
             System.out.println("A Gitlet version-control system "
@@ -239,6 +243,14 @@ public class Repository {
             }
         }
 
+        checkoutBranchHead(curr, udda);
+        head = udda.getShortSha();
+        master = branchname;
+
+        serialize();
+    }
+
+    private void checkoutBranchHead(Commit curr, Commit udda) {
         List<String> allFiles = plainFilenamesIn(CWD);
         if (allFiles != null) {
             for (String b : udda.blobs.keySet()) {
@@ -251,10 +263,6 @@ public class Repository {
                 writeContents(join(CWD.getPath(), b), contents);
             }
         }
-        head = udda.getShortSha();
-        master = branchname;
-
-        serialize();
     }
 
 
@@ -276,12 +284,12 @@ public class Repository {
 
     public void reset(String id) {
         String sid = id.substring(0, 6);
-        Set<String> fileList = commitTree.get(sid).blobs.keySet();
-
-        for (String filename : fileList) {
-            checkout(id, filename);
+        if (!commitTree.containsKey(sid)) {
+            System.out.println("No commit with that id exists.");
+            return;
         }
 
+        checkoutBranchHead(commitTree.get(head), commitTree.get(sid));
         head = sid;
 
         serialize();
@@ -293,7 +301,7 @@ public class Repository {
         String split = curr.getSplitCommit();
 
         if (split.equals(udda.getHead())) {
-            System.out.println("Given branch is an ancestor of the current branch");
+            System.out.println("Given branch is an ancestor of the current branch.");
             return;
         }
 
@@ -320,27 +328,35 @@ public class Repository {
 
         for (String f : sBlob.keySet()) {
             boolean cMod = false, uMod = false;
+            boolean cDel = false, uDel = false;
             if (!cBlob.containsKey(f)) {
                 cMod = true;
+                cDel = true;
             } else {
                 cMod = !Arrays.equals(sBlob.get(f).getContents(), cBlob.get(f).getContents());
             }
             if (!uBlob.containsKey(f)) {
                 uMod = true;
+                uDel = true;
             } else {
                 uMod = !Arrays.equals(sBlob.get(f).getContents(), uBlob.get(f).getContents());
             }
 
             if (!cMod && uMod) {
-                if (!uBlob.containsKey(f)) {
+                if (uDel) {
                     rm(f);
-                } else{
+                } else {
                     byte[] contents = uBlob.get(f).getContents();
                     writeContents(join(CWD, f), contents);
                     index.stagedFiles.put(f, uBlob.get(f));
                 }
             } else if (cMod && uMod) {
-                if (!Arrays.equals(cBlob.get(f).getContents(), uBlob.get(f).getContents())) {
+                if (!cDel && !uDel) {
+                    if (!Arrays.equals(cBlob.get(f).getContents(), uBlob.get(f).getContents())) {
+                        conflictResolver(cBlob.get(f), uBlob.get(f));
+                        conflict = true;
+                    }
+                } else if ((cDel && !uDel) || (!cDel && uDel)) {
                     conflictResolver(cBlob.get(f), uBlob.get(f));
                     conflict = true;
                 }
@@ -354,10 +370,10 @@ public class Repository {
             }
         }
 
-        String msg = "Merged " + branch + " into " + master +".";
+        String msg = "Merged " + branch + " into " + master + ".";
         mergeCommit(msg, curr, udda);
         if (conflict) {
-            System.out.println("Encountered a merge conflict");
+            System.out.println("Encountered a merge conflict.");
         }
     }
 
@@ -384,10 +400,19 @@ public class Repository {
     private void conflictResolver(Blob curr, Blob udda) {
         byte[] header = "<<<<<<< HEAD\n".getBytes();
         byte[] div = "=======\n".getBytes();
-        byte[] tail = ">>>>>>>".getBytes();
+        byte[] tail = ">>>>>>>\n".getBytes();
 
-        byte[] currCon = curr.getContents();
-        byte[] uddaCon = udda.getContents();
+        byte[] currCon, uddaCon;
+        if (curr == null) {
+            currCon = "\n".getBytes();
+        } else {
+            currCon = curr.getContents();
+        }
+        if (udda == null) {
+            uddaCon = "\n".getBytes();
+        } else {
+            uddaCon = udda.getContents();
+        }
 
         writeContents(join(CWD, curr.getFilename()), header, currCon, div, uddaCon, tail);
 

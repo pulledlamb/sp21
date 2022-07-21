@@ -17,6 +17,11 @@ public class Main {
         }
         String firstArg = args[0];
         Repository repo = new Repository();
+        if (!firstArg.equals("init")) {
+            if (checkInit(repo)) {
+                return;
+            }
+        }
         switch(firstArg) {
             case "init":
                 validateNumArgs("init", args, 1);
@@ -64,6 +69,7 @@ public class Main {
                 break;
             case "status":
                 validateNumArgs("status", args, 1);
+                checkInit(repo);
                 repo.status();
                 break;
             case "find":
@@ -109,5 +115,15 @@ public class Main {
             throw new GitletException(
                     String.format("Invalid number of arguments for: %s.", cmd));
         }
+    }
+
+    public static boolean checkInit(Repository repo) {
+        boolean re = false;
+        if (!repo.initialized()) {
+            System.out.println("Not in an initialized Gitlet directory.");
+            re = true;
+        }
+
+        return re;
     }
 }
