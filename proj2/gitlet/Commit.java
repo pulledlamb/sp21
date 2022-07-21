@@ -8,6 +8,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 
+import static gitlet.Utils.sha1;
+
 /** Represents a gitlet commit object.
  *  TODO: It's a good idea to give a description here of what else this Class
  *  does at a high level.
@@ -16,8 +18,6 @@ import java.util.HashMap;
  */
 public class Commit implements Serializable {
     /**
-     * TODO: add instance variables here.
-     *
      * List all instance variables of the Commit class here with a useful
      * comment above them describing what that variable represents and how that
      * variable is used. We've provided one example for `message`.
@@ -32,6 +32,7 @@ public class Commit implements Serializable {
 
     /** Parent SHA1 hash of this Commit. */
     String parentSha;
+    String secondParSha;
 
     String timeStamp;
 
@@ -39,15 +40,27 @@ public class Commit implements Serializable {
     HashMap<String, Blob> blobs;
 
     HashMap<String, Blob> parentBlobs;
+    HashMap<String, Blob> secondParBlobs;
     DateFormat outDate = new SimpleDateFormat("EEE MMM dd HH:mm:ss yyyy Z");
     DateFormat inDate = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy");
 
-    /* TODO: fill in the rest of this class. */
     public Commit(String msg, HashMap<String, Blob> blbs, HashMap<String, Blob> parblbs, String parSha) {
         this.msg = msg;
         this.blobs = blbs;
         this.parentBlobs = parblbs;
         this.parentSha = parSha;
+
+        timeStamp = outDate.format(new Date());
+    }
+
+    public Commit(String msg, HashMap<String, Blob> blbs, HashMap<String, Blob> parblbs,
+                  HashMap<String, Blob> secparblbs, String parSha, String secparSha) {
+        this.msg = msg;
+        this.blobs = blbs;
+        this.parentSha = parSha;
+        this.parentBlobs = parblbs;
+        this.secondParSha = secparSha;
+        this.secondParBlobs = secparblbs;
 
         timeStamp = outDate.format(new Date());
     }
@@ -67,16 +80,34 @@ public class Commit implements Serializable {
     }
 
     public void setSha() {
-        String s = "";
+        StringBuilder s = new StringBuilder();
         for (Blob b : blobs.values()) {
-            s += b.toString();
+            s.append(b.toString());
         }
         if (parentBlobs != null) {
             for (Blob b : parentBlobs.values()) {
-                s += b.toString();
+                s.append(b.toString());
             }
         }
-        sha = Utils.sha1(s + msg + timeStamp);
+        sha = sha1(s + msg + timeStamp);
+    }
+
+    public void setMergSha() {
+        StringBuilder s = new StringBuilder();
+        for (Blob b : blobs.values()) {
+            s.append(b.toString());
+        }
+        if (parentBlobs != null) {
+            for (Blob b : parentBlobs.values()) {
+                s.append(b.toString());
+            }
+        }
+        if (secondParBlobs != null) {
+            for (Blob b : secondParBlobs.values()) {
+                s.append(b.toString());
+            }
+        }
+        sha = sha1(s + msg + timeStamp);
     }
 
     public String getShortSha() {

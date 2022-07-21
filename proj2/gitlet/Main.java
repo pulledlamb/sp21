@@ -41,13 +41,43 @@ public class Main {
                     repo.checkout(args[2]);
                 } else if (args.length == 4) {
                     repo.checkout(args[1], args[3]);
+                } else if (args.length == 2){
+                    repo.checkout(0, args[1]);
                 } else {
-                    throw new GitletException("Invalid number of arguments for: checkout.");
+                    throw new GitletException("Invalid number of arguments for: checkout");
                 }
                 break;
             case "log":
                 validateNumArgs("log", args, 1);
                 repo.log();
+                break;
+            case "global-log":
+                validateNumArgs("global-log", args, 1);
+                repo.globalLog();
+                break;
+            case "status":
+                validateNumArgs("status", args, 1);
+                repo.status();
+                break;
+            case "find":
+                validateNumArgs("find", args, 2);
+                repo.find(args[1]);
+                break;
+            case "rm":
+                validateNumArgs("rm", args, 2);
+                repo.remove(args[1]);
+                break;
+            case "branch":
+                validateNumArgs("branch", args, 2);
+                repo.branch(args[1]);
+                break;
+            case "reset":
+                validateNumArgs("reset", args, 2);
+                repo.reset(args[1]);
+                break;
+            case "merge":
+                validateNumArgs("merge", args, 2);
+                repo.merge(args[1]);
                 break;
             default:
                 throw new GitletException("No command with that name exists");

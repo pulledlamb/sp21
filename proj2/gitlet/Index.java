@@ -16,5 +16,4 @@ public class Index implements Serializable {
         stagedFiles = new HashMap<>();
         removedFiles = new HashMap<>();
     }
-
 }
