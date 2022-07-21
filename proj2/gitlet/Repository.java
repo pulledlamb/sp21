@@ -124,12 +124,13 @@ public class Repository {
         } else {
             System.out.println("No reason to remove the file");
         }
+        serialize();
     }
 
     public void commit(String msg) {
         Commit parCommit = commitTree.get(head);
 
-        if (index.stagedFiles.isEmpty()) {
+        if (index.stagedFiles.isEmpty() && index.removedFiles.isEmpty()) {
             System.out.println("No changes added to the commit");
             return;
         }
@@ -228,30 +229,30 @@ public class Repository {
         }
 
         String h = branchTree.get(branchname).getHead();
-        Commit headCommit = commitTree.get(h);
+        Commit udda = commitTree.get(h);
 
         Commit curr = commitTree.get(head);
 
-        for (Blob b : headCommit.blobs.values()) {
-            if (!curr.blobs.containsValue(b)) {
-                System.out.println("There is an untracked file in the way; delete "
-                        + "it, or add and commit it first.");
-                return;
-            }
-            byte[] contents = b.getContents();
-            writeContents(join(CWD.getPath(), b.getFilename()), contents);
-        }
-
         List<String> allFiles = plainFilenamesIn(CWD);
         if (allFiles != null) {
-            for (String s : allFiles) {
-                if (!headCommit.blobs.containsKey(s)) {
-                    restrictedDelete(s);
+            for (String b : udda.blobs.keySet()) {
+                if (!curr.blobs.containsKey(b) && allFiles.contains(b)) {
+                    System.out.println("There is an untracked file in the way; delete "
+                            + "it, or add and commit it first.");
+                    return;
                 }
+                byte[] contents = udda.blobs.get(b).getContents();
+                writeContents(join(CWD.getPath(), b), contents);
             }
         }
 
-        head = headCommit.getShortSha();
+        for (String s : curr.blobs.keySet()) {
+            if (!udda.blobs.containsKey(s)) {
+                restrictedDelete(s);
+            }
+        }
+
+        head = udda.getShortSha();
         master = branchname;
 
         serialize();
@@ -310,6 +311,8 @@ public class Repository {
 
         merge(commitTree.get(curr.getHead()), commitTree.get(udda.getHead()),
                 commitTree.get(split), branch);
+
+        serialize();
     }
 
     private void merge(Commit curr, Commit udda, Commit split, String branch) {

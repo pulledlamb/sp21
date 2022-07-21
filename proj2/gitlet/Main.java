@@ -42,6 +42,10 @@ public class Main {
                 if (args.length == 3) {
                     repo.checkout(args[2]);
                 } else if (args.length == 4) {
+                    if (!args[2].equals("--")) {
+                        System.out.println("Incorrect operands.");
+                        return;
+                    }
                     repo.checkout(args[1], args[3]);
                 } else if (args.length == 2){
                     repo.checkout(0, args[1]);
