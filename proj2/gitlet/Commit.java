@@ -129,6 +129,10 @@ public class Commit implements Serializable {
         return parentSha;
     }
 
+    public String getSecondParSha() {
+        return secondParSha;
+    }
+
     public void print() {
         System.out.println("===");
         System.out.println("commit " + sha);

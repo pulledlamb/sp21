@@ -298,25 +298,47 @@ public class Repository {
     public void merge(String branch) {
         Branch curr = branchTree.get(master);
         Branch udda = branchTree.get(branch);
-        String split = curr.getSplitCommit();
-
-        if (split.equals(udda.getHead())) {
-            System.out.println("Given branch is an ancestor of the current branch.");
-            return;
-        }
-
-        if (split.equals(curr.getHead())) {
-            checkout(0, branch);
-            System.out.println("Current branch fast-forwarded.");
-            return;
-        }
+        String split = getSplit(branch);
 
         if (!index.stagedFiles.isEmpty() || !index.removedFiles.isEmpty()) {
             System.out.println("You have uncommitted changes.");
             return;
         }
 
-        merge(commitTree.get(curr.getHead()), commitTree.get(udda.getHead()),
+        if (udda == null) {
+            System.out.println("A branch with that name does not exist.");
+            return;
+        }
+
+        if (curr.equals(udda)) {
+            System.out.println("Cannot merge a branch with itself.");
+            return;
+        }
+
+        List<String> allFiles = plainFilenamesIn(CWD);
+        if (allFiles != null) {
+            for (String b : commitTree.get(udda.getHead()).blobs.keySet()) {
+                if (!commitTree.get(head).blobs.containsKey(b)
+                        && allFiles.contains(b)) {
+                    System.out.println("There is an untracked file in the way; delete "
+                            + "it, or add and commit it first.");
+                    return;
+                }
+            }
+        }
+
+        if (split.equals(udda.getHead())) {
+            System.out.println("Given branch is an ancestor of the current branch.");
+            return;
+        }
+
+        if (split.equals(head)) {
+            checkout(0, branch);
+            System.out.println("Current branch fast-forwarded.");
+            return;
+        }
+
+        merge(commitTree.get(head), commitTree.get(udda.getHead()),
                 commitTree.get(split), branch);
 
         serialize();
@@ -327,6 +349,9 @@ public class Repository {
         boolean conflict = false;
 
         for (String f : sBlob.keySet()) {
+            /** to keep track of if a file is changed in the current and given branch;
+             * and if they are removed;
+             */
             boolean cMod = false, uMod = false;
             boolean cDel = false, uDel = false;
             if (!cBlob.containsKey(f)) {
@@ -404,12 +429,12 @@ public class Repository {
 
         byte[] currCon, uddaCon;
         if (curr == null) {
-            currCon = "\n".getBytes();
+            currCon = "".getBytes();
         } else {
             currCon = curr.getContents();
         }
         if (udda == null) {
-            uddaCon = "\n".getBytes();
+            uddaCon = "".getBytes();
         } else {
             uddaCon = udda.getContents();
         }
@@ -419,6 +444,41 @@ public class Repository {
         serialize();
     }
 
+    /** get past commits in a given branch
+     */
+    private List<String> getAncestor(String branch) {
+        List<String> res = new ArrayList<>();
+        LinkedList<String> ans = new LinkedList<>();
+        String currCommit = branchTree.get(branch).getHead();
+        ans.add(currCommit);
+        while (!ans.isEmpty()) {
+            String s = ans.pop();
+            Commit c = commitTree.get(s);
+            if (c.getParentSha() != null) {
+                res.add(c.getParentSha());
+                ans.add(c.getParentSha());
+            }
+            if (c.getSecondParSha() != null) {
+                res.add(c.getSecondParSha());
+                ans.add(c.getSecondParSha());
+            }
+        }
+
+        return res;
+    }
+
+    /** find latest common split point of two branches
+     */
+    private String getSplit(String branch) {
+        List<String> curr = getAncestor(master);
+        List<String> udda = getAncestor(branch);
+        for (String s : curr) {
+            if (udda.contains(s)) {
+                return s;
+            }
+        }
+        return null;
+    }
 
     public void log() {
         Commit headCommit = commitTree.get(head);
