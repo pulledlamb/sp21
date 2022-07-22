@@ -404,10 +404,14 @@ public class Repository {
                 if (!cDel && !uDel) {
                     if (!Arrays.equals(cBlob.get(f).getContents(), uBlob.get(f).getContents())) {
                         conflictResolver(cBlob.get(f), uBlob.get(f));
+                        Blob b = new Blob(f, CWD.getPath());
+                        index.stagedFiles.put(f, b);
                         conflict = true;
                     }
                 } else if ((cDel && !uDel) || (!cDel && uDel)) {
                     conflictResolver(cBlob.get(f), uBlob.get(f));
+                    Blob b = new Blob(f, CWD.getPath());
+                    index.stagedFiles.put(f, b);
                     conflict = true;
                 }
             }
