@@ -3,6 +3,8 @@ package gitlet;
 import java.io.File;
 import java.io.Serializable;
 
+import static gitlet.Utils.*;
+
 public class Blob implements Serializable {
     /** sha1 hash of the blob. */
     String sha;
@@ -10,9 +12,9 @@ public class Blob implements Serializable {
     String filename;
 
     public Blob(String filename, String directory) {
-        File f = Utils.join(directory, filename);
-        this.contents = Utils.readContents(f);
-        this.sha = Utils.sha1(this.contents);
+        File f = join(directory, filename);
+        this.contents = readContents(f);
+        this.sha = sha1(this.contents);
         this.filename = filename;
     }
 

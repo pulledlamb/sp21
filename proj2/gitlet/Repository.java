@@ -197,8 +197,20 @@ public class Repository {
         }
 
         System.out.println("\n=== Modifications Not Staged For Commit ===");
+        List<String> modified = modified();
+        Object[] modifiedKeys = modified.toArray();
+        Arrays.sort(modifiedKeys);
+        for (Object s : modifiedKeys) {
+            System.out.println(s);
+        }
 
         System.out.println("\n=== Untracked Files ===");
+        List<String> untracked = untracked();
+        Object[] untrackedKeys = untracked.toArray();
+        Arrays.sort(untrackedKeys);
+        for (Object o : untrackedKeys) {
+            System.out.println(o);
+        }
     }
 
     public void checkout(String filename) {
@@ -252,22 +264,25 @@ public class Repository {
 
     private void checkoutBranchHead(Commit curr, Commit udda) {
         List<String> allFiles = plainFilenamesIn(CWD);
-        for (String b : curr.blobs.keySet()) {
-            if (!udda.blobs.containsKey(b)) {
-                rm(b);
-            }
-        }
-        if (allFiles != null) {
-            for (String b : udda.blobs.keySet()) {
-                if (!curr.blobs.containsKey(b) && allFiles.contains(b)) {
+
+        for (String b : udda.blobs.keySet()) {
+            if (!curr.blobs.containsKey(b)) {
+                assert allFiles != null;
+                if (allFiles.contains(b)) {
                     System.out.println("There is an untracked file in the way; delete "
                             + "it, or add and commit it first.");
                     return;
                 }
-                byte[] contents = udda.blobs.get(b).getContents();
-                writeContents(join(CWD.getPath(), b), contents);
+            }
+            byte[] contents = udda.blobs.get(b).getContents();
+            writeContents(join(CWD.getPath(), b), contents);
+        }
+        for (String s : allFiles) {
+            if (!udda.blobs.containsKey(s)) {
+                restrictedDelete(s);
             }
         }
+
         serialize();
     }
 
@@ -323,10 +338,10 @@ public class Repository {
         }
 
         List<String> allFiles = plainFilenamesIn(CWD);
-        if (allFiles != null) {
-            for (String b : commitTree.get(udda.getHead()).blobs.keySet()) {
-                if (!commitTree.get(head).blobs.containsKey(b)
-                        && allFiles.contains(b)) {
+        for (String b : commitTree.get(udda.getHead()).blobs.keySet()) {
+            if (!commitTree.get(head).blobs.containsKey(b)) {
+                assert allFiles != null;
+                if (allFiles.contains(b)) {
                     System.out.println("There is an untracked file in the way; delete "
                             + "it, or add and commit it first.");
                     return;
@@ -526,5 +541,56 @@ public class Repository {
         writeObject(join(GITLET_DIR, MASTER), master);
     }
 
+    private List<String> modified() {
+        List<String> allFiles = plainFilenamesIn(CWD);
+        List<String> deleted = new ArrayList<>();
+        List<String> modified = new ArrayList<>();
+
+        for (String s : commitTree.get(head).blobs.keySet()) {
+            assert allFiles != null;
+            if (allFiles.contains(s)) {
+                byte[] b = readContents(join(CWD, s));
+                byte[] contents = commitTree.get(head).blobs.get(s).getContents();
+                if (!Arrays.equals(contents, b)
+                        && !index.stagedFiles.containsKey(s)) {
+                    modified.add(s + " (modified)");
+                }
+            } else {
+                if (!index.removedFiles.containsKey(s)) {
+                    modified.add(s + " (deleted)");
+                }
+            }
+        }
+
+        for (String s : index.stagedFiles.keySet()) {
+            assert allFiles != null;
+            if (allFiles.contains(s)) {
+                byte[] b = readContents(join(CWD, s));
+                byte[] contents = index.stagedFiles.get(s).getContents();
+                if (!Arrays.equals(contents, b)) {
+                    modified.add(s + " (modified)");
+                }
+            } else {
+                modified.add(s + "(deleted)");
+            }
+        }
+
+        return modified;
+    }
+
+    private List<String> untracked() {
+        List<String> allFiles = plainFilenamesIn(CWD);
+        List<String> untracked = new ArrayList<>();
+
+        assert allFiles != null;
+        for (String s : allFiles) {
+            if (!index.stagedFiles.containsKey(s)
+                    && !commitTree.get(head).blobs.containsKey(s)) {
+                untracked.add(s);
+            }
+        }
+
+        return untracked;
+    }
 
 }

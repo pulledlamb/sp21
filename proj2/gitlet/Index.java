@@ -16,9 +16,4 @@ public class Index implements Serializable {
         stagedFiles = new HashMap<>();
         removedFiles = new HashMap<>();
     }
-
-    public boolean staged(String filename) {
-        return (stagedFiles.containsKey(filename)
-                || removedFiles.containsKey(filename));
-    }
 }
