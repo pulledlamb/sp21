@@ -252,6 +252,11 @@ public class Repository {
 
     private void checkoutBranchHead(Commit curr, Commit udda) {
         List<String> allFiles = plainFilenamesIn(CWD);
+        for (String b : curr.blobs.keySet()) {
+            if (!udda.blobs.containsKey(b)) {
+                rm(b);
+            }
+        }
         if (allFiles != null) {
             for (String b : udda.blobs.keySet()) {
                 if (!curr.blobs.containsKey(b) && allFiles.contains(b)) {
@@ -263,6 +268,7 @@ public class Repository {
                 writeContents(join(CWD.getPath(), b), contents);
             }
         }
+        serialize();
     }
 
 
@@ -291,6 +297,8 @@ public class Repository {
 
         checkoutBranchHead(commitTree.get(head), commitTree.get(sid));
         head = sid;
+        branchTree.get(master).setHead(head);
+        index.clear();
 
         serialize();
     }
@@ -298,7 +306,6 @@ public class Repository {
     public void merge(String branch) {
         Branch curr = branchTree.get(master);
         Branch udda = branchTree.get(branch);
-        String split = getSplit(branch);
 
         if (!index.stagedFiles.isEmpty() || !index.removedFiles.isEmpty()) {
             System.out.println("You have uncommitted changes.");
@@ -327,12 +334,15 @@ public class Repository {
             }
         }
 
-        if (split.equals(udda.getHead())) {
+        List<String> pastCommits = getAncestor(master);
+        String split = getSplit(branch);
+        if (pastCommits.contains(udda.getHead())) {
             System.out.println("Given branch is an ancestor of the current branch.");
             return;
         }
 
-        if (split.equals(head)) {
+        List<String> uddaPast = getAncestor(branch);
+        if (uddaPast.contains(head)) {
             checkout(0, branch);
             System.out.println("Current branch fast-forwarded.");
             return;
@@ -515,4 +525,6 @@ public class Repository {
         writeObject(join(GITLET_DIR, "branch"), branchTree);
         writeObject(join(GITLET_DIR, MASTER), master);
     }
+
+
 }
