@@ -204,8 +204,7 @@ public class Repository {
 
     public void pull(String name, String branch) {
         fetch(name, branch);
-        String operator = System.getProperty("file.separator");
-        String bname = name + operator + branch;
+        String bname = name + File.separator + branch;
         merge(bname);
     }
 
@@ -223,8 +222,7 @@ public class Repository {
         }
 
         HashMap<String, Commit> remoteCommit = getRemoteCommit(name);
-        String operator = System.getProperty("file.separator");
-        String bname = name + operator + branch;
+        String bname = name + File.pathSeparator + branch;
         if (!branchTree.containsKey(bname)) {
             Branch b = new Branch(bname, head);
             branchTree.put(bname, b);
