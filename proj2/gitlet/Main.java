@@ -112,6 +112,10 @@ public class Main {
                 validateNumArgs("push", args, 3);
                 repo.push(args[1], args[2]);
                 break;
+            case "pull":
+                validateNumArgs("pull", args, 3);
+                repo.pull(args[1], args[2]);
+                break;
             default:
                 System.out.println("No command with that name exists");
                 break;
