@@ -145,8 +145,6 @@ public class Repository {
             System.out.println("A remote with that name already exists.");
             return;
         }
-        addr.replaceAll("\\/", System.getProperty("file.separator"));
-
         remote.put(name, addr);
         serialize();
     }
@@ -200,7 +198,7 @@ public class Repository {
         }
 
         HashMap<String, Commit> remoteCommit = getRemoteCommit(name);
-        String bname = name + "/" + branch;
+        String bname = join(name, branch).toString();
         if (!branchTree.containsKey(bname)) {
             Branch b = new Branch(bname, head);
             branchTree.put(bname, b);
