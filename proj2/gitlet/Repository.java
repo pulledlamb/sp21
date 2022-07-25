@@ -174,11 +174,30 @@ public class Repository {
             return;
         }
 
-        if (remoteTree.containsKey(branch)) {
-            String headCommit = head;
-            while (!headCommit.equals(remoteHead)) {
-
+        HashMap<String, Commit> remoteCommit = getRemoteCommit(name);
+        if (!remoteTree.containsKey(branch)) {
+            Branch b = new Branch(branch, remoteHead);
+            remoteTree.put(branch, b);
+            remoteTree.get(branch).setSplitCommit(remoteHead);
+        }
+        LinkedList<String> remotes = new LinkedList<>();
+        remotes.add(head);
+        while (!remotes.isEmpty()) {
+            String s = remotes.pop();
+            Commit c = remoteCommit.get(s);
+            remoteCommit.put(c.getShortSha(), c);
+            if (c.getParentSha() != null) {
+                remotes.add(c.getParentSha());
             }
+            if (c.getSecondParSha() != null) {
+                remotes.add(c.getSecondParSha());
+            }
+            if (remotes.isEmpty()) {
+                Commit last = new Commit(c.getMsg(), c.blobs, commitTree.get(head).blobs,
+                        commitTree.get(head).getShortSha());
+            }
+
+            serialize();
         }
 
 
