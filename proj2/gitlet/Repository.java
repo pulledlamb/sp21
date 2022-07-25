@@ -20,6 +20,9 @@ public class Repository {
     String head;
     String master;
 
+    /** remote */
+    HashMap<String, String> remote;
+
     /** Staging area*/
     Index index;
 
@@ -70,6 +73,12 @@ public class Repository {
                     String.class);
         } catch (IllegalArgumentException e) {
             this.master = "";
+        }
+        try {
+            this.remote = readObject(join(GITLET_DIR, "remote"),
+                    HashMap.class);
+        } catch (IllegalArgumentException e) {
+            this.remote = new HashMap<>();
         }
     }
 
@@ -129,6 +138,109 @@ public class Repository {
             System.out.println("No reason to remove the file");
         }
         serialize();
+    }
+
+    public void addRemote(String name, String addr) {
+        if (remote.containsKey(name)) {
+            System.out.println("A remote with that name already exists.");
+            return;
+        }
+        addr.replaceAll("\\/", System.getProperty("file.separator"));
+
+        remote.put(name, addr);
+        serialize();
+    }
+
+    public void removeRemote(String name) {
+        if (!remote.containsKey(name)) {
+            System.out.println("A remote with that name does not exist.");
+            return;
+        }
+
+        remote.remove(name);
+        serialize();
+    }
+
+    public void push(String name, String branch) {
+        File f = new File(remote.get(name));
+        if (!f.exists()) {
+            System.out.println("Remote directory not found.");
+            return;
+        }
+
+        HashMap<String, Branch> remoteTree = getRemoteBranch(name);
+
+        String remoteHead = remoteTree.get(branch).getHead();
+        if (!commitTree.containsKey(remoteHead)) {
+            System.out.println("Please pull down remote changes before pushing.");
+            return;
+        }
+
+        if (remoteTree.containsKey(branch)) {
+            String headCommit = head;
+            while (!headCommit.equals(remoteHead)) {
+
+            }
+        }
+
+
+    }
+
+    public void fetch(String name, String branch) {
+        File f = new File(remote.get(name));
+        if (!f.exists()) {
+            System.out.println("Remote directory not found.");
+            return;
+        }
+
+        HashMap<String, Branch> remoteTree = getRemoteBranch(name);
+        if (!remoteTree.containsKey(branch)) {
+            System.out.println("That remote does not have that branch.");
+            return;
+        }
+
+        HashMap<String, Commit> remoteCommit = getRemoteCommit(name);
+        String bname = name + "/" + branch;
+        if (!branchTree.containsKey(bname)) {
+            Branch b = new Branch(bname, head);
+            branchTree.put(bname, b);
+            branchTree.get(master).setSplitCommit(head);
+        }
+
+        String remoteHead = remoteTree.get(branch).getHead();
+        LinkedList<String> remotes = new LinkedList<>();
+        remotes.add(remoteHead);
+        while (!remotes.isEmpty()) {
+            String s = remotes.pop();
+            Commit c = remoteCommit.get(s);
+            if (!commitTree.containsKey(c.getShortSha())) {
+                commitTree.put(c.getShortSha(), c);
+            }
+            if (c.getParentSha() != null) {
+                remotes.add(c.getParentSha());
+            }
+            if (c.getSecondParSha() != null) {
+                remotes.add(c.getSecondParSha());
+            }
+            if (remotes.isEmpty()) {
+                Commit last = new Commit(c.getMsg(), c.blobs,
+                        commitTree.get(head).blobs, commitTree.get(head).getShortSha());
+            }
+        }
+
+        serialize();
+    }
+
+
+
+    @SuppressWarnings("unchecked")
+    private HashMap<String, Branch> getRemoteBranch(String name) {
+        return readObject(join(remote.get(name), "branch"), HashMap.class);
+    }
+
+    @SuppressWarnings("unchecked")
+    private HashMap<String, Commit> getRemoteCommit(String name) {
+        return readObject(join(remote.get(name), "commits"), HashMap.class);
     }
 
     public void commit(String msg) {
@@ -234,7 +346,7 @@ public class Repository {
         serialize();
     }
 
-    public void checkout(int n, String branchname) {
+    public void checkoutBranch(String branchname) {
         if (!branchTree.containsKey(branchname)) {
             System.out.println("No such branch exists.");
             return;
@@ -358,7 +470,7 @@ public class Repository {
 
         List<String> uddaPast = getAncestor(branch);
         if (uddaPast.contains(head)) {
-            checkout(0, branch);
+            checkoutBranch(branch);
             System.out.println("Current branch fast-forwarded.");
             return;
         }
@@ -374,7 +486,8 @@ public class Repository {
         boolean conflict = false;
 
         for (String f : sBlob.keySet()) {
-            /** to keep track of if a file is changed in the current and given branch;
+            /**
+             * to keep track of if a file is changed in the current and given branch;
              * and if they are removed;
              */
             boolean cMod = false, uMod = false;
@@ -473,8 +586,7 @@ public class Repository {
         serialize();
     }
 
-    /** get past commits in a given branch
-     */
+    /** get past commits in a given branch */
     private List<String> getAncestor(String branch) {
         List<String> res = new ArrayList<>();
         LinkedList<String> ans = new LinkedList<>();
@@ -496,8 +608,7 @@ public class Repository {
         return res;
     }
 
-    /** find latest common split point of two branches
-     */
+    /** find latest common split point of two branches */
     private String getSplit(String branch) {
         List<String> curr = getAncestor(master);
         List<String> udda = getAncestor(branch);
@@ -543,6 +654,7 @@ public class Repository {
         writeObject(join(GITLET_DIR, "head"), head);
         writeObject(join(GITLET_DIR, "branch"), branchTree);
         writeObject(join(GITLET_DIR, MASTER), master);
+        writeObject(join(GITLET_DIR, "remote"), remote);
     }
 
     private List<String> modified() {

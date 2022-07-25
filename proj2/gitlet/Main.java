@@ -54,7 +54,7 @@ public class Main {
                     }
                     repo.checkout(args[1], args[3]);
                 } else if (args.length == 2){
-                    repo.checkout(0, args[1]);
+                    repo.checkoutBranch(args[1]);
                 } else {
                     throw new GitletException("Invalid number of arguments for: checkout");
                 }
@@ -95,6 +95,22 @@ public class Main {
             case "merge":
                 validateNumArgs("merge", args, 2);
                 repo.merge(args[1]);
+                break;
+            case "add-remote":
+                validateNumArgs("add-remote", args, 3);
+                repo.addRemote(args[1], args[2]);
+                break;
+            case "rm-remote":
+                validateNumArgs("rm-remote", args, 2);
+                repo.removeRemote(args[1]);
+                break;
+            case "fetch":
+                validateNumArgs("fetch", args, 3);
+                repo.fetch(args[1], args[2]);
+                break;
+            case "push":
+                validateNumArgs("push", args, 3);
+                repo.push(args[1], args[2]);
                 break;
             default:
                 System.out.println("No command with that name exists");
