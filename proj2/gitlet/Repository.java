@@ -178,7 +178,6 @@ public class Repository {
         if (!remoteTree.containsKey(branch)) {
             Branch b = new Branch(branch, remoteHead);
             remoteTree.put(branch, b);
-            remoteTree.get(branch).setSplitCommit(remoteHead);
         }
         LinkedList<String> remotes = new LinkedList<>();
         remotes.add(head);
@@ -200,11 +199,14 @@ public class Repository {
             serialize();
         }
 
-
+        remoteTree.get(branch).setHead(head);
     }
 
     public void pull(String name, String branch) {
-
+        fetch(name, branch);
+        String operator = System.getProperty("file.separator");
+        String bname = name + operator + branch;
+        merge(bname);
     }
 
     public void fetch(String name, String branch) {
@@ -221,11 +223,11 @@ public class Repository {
         }
 
         HashMap<String, Commit> remoteCommit = getRemoteCommit(name);
-        String bname = join(name, branch).toString();
+        String operator = System.getProperty("file.separator");
+        String bname = name + operator + branch;
         if (!branchTree.containsKey(bname)) {
             Branch b = new Branch(bname, head);
             branchTree.put(bname, b);
-            branchTree.get(master).setSplitCommit(head);
         }
 
         String remoteHead = remoteTree.get(branch).getHead();
@@ -248,6 +250,8 @@ public class Repository {
                         commitTree.get(head).blobs, commitTree.get(head).getShortSha());
             }
         }
+
+        branchTree.get(bname).setHead(remoteHead);
 
         serialize();
     }
@@ -296,8 +300,6 @@ public class Repository {
         }
         Branch coolBeans = new Branch(branchName, head);
         branchTree.put(branchName, coolBeans);
-
-        branchTree.get(master).setSplitCommit(head);
 
         serialize();
     }
