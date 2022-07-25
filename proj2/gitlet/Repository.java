@@ -249,7 +249,6 @@ public class Repository {
             }
         }
 
-        head = remoteHead;
         serialize();
     }
 
