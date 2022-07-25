@@ -197,10 +197,22 @@ public class Repository {
                         commitTree.get(head).getShortSha());
             }
 
-            serialize();
+            remoteSerialize(name);
         }
 
         remoteTree.get(branch).setHead(head);
+
+        serialize();
+    }
+
+    private void remoteSerialize(String name) {
+        String branch = remote.get(name);
+        writeObject(join(branch, "index"), index);
+        writeObject(join(branch, "commits"), commitTree);
+        writeObject(join(branch, "head"), head);
+        writeObject(join(branch, "branch"), branchTree);
+        writeObject(join(branch, MASTER), master);
+        writeObject(join(branch, "remote"), remote);
     }
 
     public void pull(String name, String branch) {
@@ -670,7 +682,7 @@ public class Repository {
         }
     }
 
-    public void serialize() {
+    private void serialize() {
         writeObject(join(GITLET_DIR, "index"), index);
         writeObject(join(GITLET_DIR, "commits"), commitTree);
         writeObject(join(GITLET_DIR, "head"), head);
