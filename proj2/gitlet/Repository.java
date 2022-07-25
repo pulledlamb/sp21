@@ -203,6 +203,10 @@ public class Repository {
 
     }
 
+    public void pull(String name, String branch) {
+
+    }
+
     public void fetch(String name, String branch) {
         File f = new File(remote.get(name));
         if (!f.exists()) {
@@ -245,6 +249,7 @@ public class Repository {
             }
         }
 
+        head = remoteHead;
         serialize();
     }
 
