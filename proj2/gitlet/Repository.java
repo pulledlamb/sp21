@@ -184,7 +184,7 @@ public class Repository {
         remotes.add(head);
         while (!remotes.isEmpty()) {
             String s = remotes.pop();
-            Commit c = remoteCommit.get(s);
+            Commit c = commitTree.get(s);
             remoteCommit.put(c.getShortSha(), c);
             if (c.getParentSha() != null) {
                 remotes.add(c.getParentSha());
