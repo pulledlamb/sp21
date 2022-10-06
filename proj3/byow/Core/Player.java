@@ -33,10 +33,8 @@ public class Player extends Creature {
         }
         if (isKey(x + dx, y + dy)) {
             boolean win = false;
-            Font f = StdDraw.getFont();
             if (flowers >= FEE) {
                 win = playGame(xLim, yLim);
-                StdDraw.setFont(f);
                 if (win) {
                     keys += 1;
                     world[x][y] = Tileset.FLOOR;
