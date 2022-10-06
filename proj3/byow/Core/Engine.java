@@ -3,11 +3,14 @@ package byow.Core;
 import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
+import byow.lab13.MemoryGame;
 import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.*;
 import java.io.*;
 import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Engine {
     TERenderer ter = new TERenderer();
@@ -18,16 +21,18 @@ public class Engine {
     public static final int FONTLARGE = 36,
             FONTMED = 27, FONTSMALL = 24;
     public static final int SIGHT = 10;
-    public static boolean isGameOver = false;
-    public boolean escaped, loadGame, partial, proj;
-    public static TETile[][] world, partialWorld;
+    static boolean isGameOver = false;
+    boolean escaped, loadGame, partial, proj;
+    static TETile[][] world, partialWorld;
     long seed;
     WorldGenerator wg; Player p; Guard g;
+    InputSource inputSource;
     /**
      * Method used for exploring a fresh world. This method should handle all inputs,
      * including inputs from the main menu.
      */
     public void interactWithKeyboard() {
+        inputSource = new KeyboardInputSource();
         init();
         startGame();
     }
@@ -38,18 +43,27 @@ public class Engine {
 
         while (!isGameOver) {
             if (partial) {
-                ter.renderFrame(partialWorld);
+                ter.renderPartialFrame(world, p.getPosition().getX(),
+                        p.getPosition().getY());
             } else {
                 ter.renderFrame(world);
             }
-            update();
-
+            if (p.keys > 1) {
+                g.hunt();
+            }
+            if (p.atLockedDoor) {
+                displayInfo("Need 3 keys to open.");
+            } else {
+                displayInfo(isMouseOver());
+            }
             if (p.openDoor) {
                 drawBlank("Congratulations! You've escaped the dungeon!");
                 StdDraw.pause(2500);
                 drawInit("");
                 break;
             }
+            update();
+
         }
         drawBlank("The guard has caught you.");
     }
@@ -57,86 +71,19 @@ public class Engine {
     public void init() {
         drawInit("");
         solicitSeed();
-        if (loadGame) {
-            wg = load();
-        } else {
-            wg = new WorldGenerator(WIDTH, HEIGHT, new Random(seed));
-        }
+        wg = new WorldGenerator(WIDTH, HEIGHT, new Random(seed));
         isGameOver = false; escaped = false; partial = true; proj = false;
         world = wg.getWorld(); partialWorld = wg.getPartialWorld();
         p = new Player(world, WorldGenerator.initPlayer);
         g = new Guard(world, WorldGenerator.initGuard, p);
     }
 
-    public void init(long s) {
-        if (loadGame) {
-            wg = load();
-        } else {
-            wg = new WorldGenerator(WIDTH, HEIGHT, new Random(s));
-        }
-        isGameOver = false; escaped = false; partial = true; proj = false;
-        world = wg.getWorld(); partialWorld = wg.getPartialWorld();
-        p = new Player(world, WorldGenerator.initGuard);
-        g = new Guard(world, WorldGenerator.initGuard, p);
-    }
-
-    // sync between the real world and the partial shown world
-    // that is, display only within line of sight of the avatar
-    public void sync() {
-        for (int i = 0; i < WIDTH; i++) {
-            for (int j = 0; j < HEIGHT; j++) {
-                partialWorld[i][j] = Tileset.NOTHING;
-            }
-        }
-        int left = Math.max(p.getPosition().getX() - SIGHT, 0),
-                right = Math.min(p.getPosition().getX() + SIGHT, WIDTH),
-                up = Math.min(p.getPosition().getY() + SIGHT, HEIGHT),
-                down = Math.max(p.getPosition().getY() - SIGHT, 0);
-        for (int i = left; i < right; i++) {
-            if (up - down >= 0) {
-                System.arraycopy(world[i], down,
-                        partialWorld[i], down, up - down);
-            }
-        }
-    }
-
     public void update() {
-        sync();
-        StringBuilder input = new StringBuilder();
-        if (StdDraw.hasNextKeyTyped()) {
-            char c = StdDraw.nextKeyTyped();
-            g.hunt(proj);
-            if (c == 'Q' || c == 'q') {
-                input.append(c);
-                if (input.toString().contains(":q") ||
-                        input.toString().contains(":Q")) {
-                    save(wg);
-                    System.exit(0);
-                } else if (input.toString().contains("q") ||
-                        input.toString().contains("Q")) {
-                    System.exit(0);
-                }
-            } else if (c == 't') {
-                partial = !partial;
-            } else if (c == ':') {
-                input.append(c);
-            } else if (c == 'W' || c == 'w') {
-                p.movePlayer(0, 1);
-            } else if (c == 'S' || c == 's') {
-                p.movePlayer(0, -1);
-            } else if (c == 'a' || c == 'A') {
-                p.movePlayer(-1, 0);
-            } else if (c == 'D' || c == 'd') {
-                p.movePlayer(1, 0);
-            } else if (c == 'p' || c == 'P') {
-                proj = !proj;
-            }
+        if (inputSource.possibleNextInput()) {
+            actions(inputSource.getNextKey());
+            g.projPath(proj);
         }
-        if (p.atLockedDoor) {
-            displayInfo("Need 3 keys to open.");
-        } else {
-            displayInfo(isMouseOver());
-        }
+
     }
 
     public String isMouseOver() {
@@ -158,6 +105,7 @@ public class Engine {
         StdDraw.setPenColor(Color.WHITE);
         StdDraw.textLeft(1, 1, "# of keys: " + p.keys + "/3");
         StdDraw.textLeft(11, 1, "# of flowers: " + p.flowers);
+        StdDraw.textRight(80, 1, "Toggle on/off t: partial sight; p: projected guard path");
         StdDraw.line(0, 1.8, Engine.WIDTH, 1.8);
         StdDraw.setPenColor(Color.GREEN);
         StdDraw.text(WIDTH / 2, 1, msg);
@@ -171,7 +119,7 @@ public class Engine {
 
     public void drawBlank(String s) {
         StdDraw.clear();
-        StdDraw.clear(Color.BLACK );
+        StdDraw.clear(Color.BLACK);
         Font f1 = new Font("Monaco", Font.BOLD, FONTLARGE);
         StdDraw.setFont(f1);
         StdDraw.setPenColor(Color.WHITE);
@@ -212,15 +160,19 @@ public class Engine {
         StringBuilder input = new StringBuilder();
         while (true) {
             try {
-                if (StdDraw.hasNextKeyTyped()) {
-                    char c = StdDraw.nextKeyTyped();
+                if (inputSource.possibleNextInput()) {
+                    char c = inputSource.getNextKey();
                     if (c == 'S' || c == 's') {
-                        seed = Long.parseLong(input.toString());
+                        this.seed = Long.parseLong(input.toString());
                         break;
                     } else if (c == 'N' || c == 'n') {
+                        input = new StringBuilder();
                         drawInit("Enter seed: ");
                     } else if (c == 'L' || c == 'l') {
-                        loadGame = true;
+                        wg = load();
+                        break;
+                    } else if (c == 'Q' || c == 'q') {
+                        System.exit(0);
                     } else {
                         input.append(c);
                         drawInit("Enter seed: " + input);
@@ -255,7 +207,7 @@ public class Engine {
         return new WorldGenerator(WIDTH, HEIGHT, new Random(SEED));
     }
 
-    public void save(WorldGenerator wg) {
+    public void save(WorldGenerator wGen) {
         File f = new File("./saved_data");
         try {
             if (!f.exists()) {
@@ -263,10 +215,34 @@ public class Engine {
             }
             FileOutputStream fs = new FileOutputStream(f);
             ObjectOutputStream os = new ObjectOutputStream(fs);
-            os.writeObject(wg);
+            os.writeObject(wGen);
         } catch (IOException e) {
             System.out.println(e);
             System.exit(0);
+        }
+    }
+
+    public void actions(char c) {
+
+        if (c == 'Q') {
+            System.exit(0);
+        } else if (c == 'T') {
+            partial = !partial;
+        } else if (c == ':') {
+            if (inputSource.getNextKey() == 'Q') {
+                save(wg);
+                System.exit(0);
+            }
+        } else if (c == 'W') {
+            p.movePlayer(0, 1);
+        } else if (c == 'S') {
+            p.movePlayer(0, -1);
+        } else if (c == 'A') {
+            p.movePlayer(-1, 0);
+        } else if (c == 'D') {
+            p.movePlayer(1, 0);
+        } else if (c == 'P') {
+            proj = !proj;
         }
     }
     /**
@@ -291,7 +267,6 @@ public class Engine {
      * @return the 2D TETile[][] representing the state of the world
      */
     public TETile[][] interactWithInputString(String input) {
-        // TODO: Fill out this method so that it run the engine using the input
         // passed in as an argument, and return a 2D tile representation of the
         // world that would have been drawn if the same inputs had been given
         // to interactWithKeyboard().
@@ -299,9 +274,25 @@ public class Engine {
         // See proj3.byow.InputDemo for a demo of how you can make a nice clean interface
         // that works for many different input types.
 
-        long s = Long.parseLong(input.substring(1, input.length() - 1));
-        init(s);
-        TETile[][] finalWorldFrame = world;
-        return finalWorldFrame;
+        if (!input.matches("^[0-9a-zA-Z]+$")) {
+            System.out.println("Wrong input!");
+            return null;
+        }
+        parseSeed(input);
+
+        input = input.replaceAll("n([0-9])+s", "");
+        inputSource = new StringInputDevice(input);
+
+        while (inputSource.possibleNextInput()) {
+            char nextKey = inputSource.getNextKey();
+            actions(nextKey);
+        }
+        return world;
+    }
+
+    private void parseSeed(String input) {
+        Pattern p = Pattern.compile("([0-9]+)");
+        Matcher m = p.matcher(input);
+        seed = Long.parseLong(m.group(1));
     }
 }

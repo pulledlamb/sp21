@@ -25,7 +25,8 @@ public class Player extends Creature {
 
     public void movePlayer(int dx, int dy) {
         int x = p.getX(), y = p.getY();
-        if (isFloor(x + dx, y + dy) || isTree(x + dx, y + dy)) {
+        if (isFloor(x + dx, y + dy)
+                && !isGuard(x + dx, y + dy)) {
             world[x][y] = Tileset.FLOOR;
             p.update(x + dx, y + dy);
             drawPlayer();

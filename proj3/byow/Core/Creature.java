@@ -20,16 +20,18 @@ public class Creature {
     }
 
     public boolean isFloor(int x, int y) {
-        return world[x][y].equals(Tileset.FLOOR);
+        return world[x][y].equals(Tileset.FLOOR)
+                || world[x][y].equals(Tileset.REDFLOOR);
     }
 
     public boolean isFlower(int x, int y) {
         return world[x][y].equals(Tileset.FLOWER);
     }
 
-    public boolean isTree(int x, int y) {
-        return world[x][y].equals(Tileset.TREE);
+    public boolean isGuard(int x, int y) {
+        return world[x][y].equals(Tileset.WATER);
     }
+
     public boolean isKey(int x, int y) {
         return world[x][y].equals(Tileset.KEY);
     }

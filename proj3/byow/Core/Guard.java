@@ -5,7 +5,6 @@ import byow.TileEngine.Tileset;
 import edu.princeton.cs.introcs.StdDraw;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 public class Guard extends Creature {
@@ -34,12 +33,10 @@ public class Guard extends Creature {
         }
     }
 
-    public void hunt(boolean proj) {
+    public void hunt() {
         AStarSolver solver = new AStarSolver(graph,
                 p, prey.getPosition(), 100);
         List<Position> shortestPath = solver.getSolution();
-
-        projectedPath.addAll(shortestPath);
 
         int x = shortestPath.get(1).getX(), y = shortestPath.get(1).getY();
         Position near = new Position(x, y);
@@ -61,23 +58,30 @@ public class Guard extends Creature {
             Engine.isGameOver = true;
         }
         drawGuard();
+        StdDraw.pause(100);
+    }
+
+    public void projPath(boolean proj) {
+        AStarSolver solver = new AStarSolver(graph,
+                p, prey.getPosition(), 100);
+        List<Position> shortestPath = solver.getSolution();
+        projectedPath.addAll(shortestPath);
         if (proj) {
             drawProjectedPath(projectedPath, Tileset.FLOOR);
-            drawProjectedPath(shortestPath, Tileset.TREE);
+            drawProjectedPath(shortestPath, Tileset.REDFLOOR);
         } else {
             drawProjectedPath(projectedPath, Tileset.FLOOR);
         }
-        StdDraw.pause(100);
     }
 
     public void drawProjectedPath(List<Position> shortestPath, TETile t) {
         for (Position s : shortestPath) {
-            if (!s.equals(p) && !s.equals(prey.getPosition())) {
+            if (world[s.getX()][s.getY()].equals(Tileset.FLOOR)
+                    || world[s.getX()][s.getY()].equals(Tileset.REDFLOOR)) {
                 world[s.getX()][s.getY()] = t;
             }
         }
     }
-
 
     public void moveGuard(int dx, int dy) {
         int x = p.getX(), y = p.getY();

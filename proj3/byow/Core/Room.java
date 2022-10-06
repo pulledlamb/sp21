@@ -91,7 +91,7 @@ public class Room implements Serializable {
                 dDir = 1; nDir = 0;
                 nDoorPos = new Position(dX, dY - 1);
                 break;
-            case 3:
+            default:
                 // neighbor to the west
                 nX = x - 2 - w;
                 nY = RandomUtils.uniform(seed, y, y + height);
@@ -164,14 +164,14 @@ public class Room implements Serializable {
     }
 
 
-    private void drawRow(TETile[][] world, int start, int end,
+    private void drawRow(TETile[][] w, int start, int end,
                          int r, int col, TETile t) {
         // draw column if col = 1
         for (int i = start; i <= end; i++) {
             if (col == 1) {
-                world[r][i] = t;
+                w[r][i] = t;
             } else {
-                world[i][r] = t;
+                w[i][r] = t;
             }
         }
     }

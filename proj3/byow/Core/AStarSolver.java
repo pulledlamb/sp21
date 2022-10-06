@@ -7,14 +7,14 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class AStarSolver {
-    public ArrayHeapMinPQ<Position> fringe;
+    private ArrayHeapMinPQ<Position> fringe;
 
-    public SolverOutcome result;
-    public LinkedList<Position> solution;
-    public int numStates = 0;
-    public double timeSpent, solutionWeight;
-    public HashMap<Position, Position> edgeTo;
-    public HashMap<Position, Double> distTo;
+    private SolverOutcome result;
+    private LinkedList<Position> solution;
+    private int numStates = 0;
+    private double timeSpent, solutionWeight;
+    private HashMap<Position, Position> edgeTo;
+    private HashMap<Position, Double> distTo;
 
     public AStarSolver(AStarGraph input, Position start,
                        Position end, double timeout) {
@@ -30,7 +30,7 @@ public class AStarSolver {
         numStates += 1;
 
         while (!fringe.isEmpty() || fringe.getSmallest().equals(end)
-                ||sw.elapsedTime() > timeout) {
+                || sw.elapsedTime() > timeout) {
             Position source = fringe.removeSmallest();
             numStates += 1;
 

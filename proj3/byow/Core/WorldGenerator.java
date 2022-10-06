@@ -2,19 +2,20 @@ package byow.Core;
 
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
-import edu.princeton.cs.introcs.StdDraw;
 
 import java.util.ArrayList;
 import java.util.Random;
 
 public class WorldGenerator {
-    public static final int SIGHT = 6, FLOWER = 4, KEYS = 3;
+    public static final int FLOWER = 4, KEYS = 3;
     int width, height;
     Room initialRoom;
     TETile[][] world, partialWorld;
     ArrayList<Room> rooms, largeRooms;
     Random seed;
-    public static Position doorPos, initPlayer, initGuard;
+    static Position doorPos;
+    static Position initPlayer;
+    static Position initGuard;
 
 
     public WorldGenerator(int w, int h, Random r) {
@@ -32,10 +33,10 @@ public class WorldGenerator {
         generateWorld();
     }
 
-    private void drawBackground(TETile[][] world) {
+    private void drawBackground(TETile[][] w) {
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
-                world[i][j] = Tileset.NOTHING;
+                w[i][j] = Tileset.NOTHING;
             }
         }
     }

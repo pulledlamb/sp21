@@ -1,10 +1,6 @@
 package byow.Core;
 
-import byow.TileEngine.TETile;
-import byow.TileEngine.Tileset;
-
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 
 public class AStarGraph {
@@ -24,7 +20,7 @@ public class AStarGraph {
 
         int x = v.getX(), y = v.getY();
 
-        if (checkValidPath(x, y, 0 , 1))  {
+        if (checkValidPath(x, y, 0, 1))  {
             list.add(new WeightedEdge<>(v, new Position(x, y + 1), 1));
         }
         if (checkValidPath(x, y, 0, -1)) {

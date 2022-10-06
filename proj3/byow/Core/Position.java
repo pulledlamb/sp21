@@ -17,8 +17,8 @@ public class Position {
         return y;
     }
 
-    public void update(int x, int y) {
-        this.x = x; this.y = y;
+    public void update(int xPos, int yPos) {
+        this.x = xPos; this.y = yPos;
     }
 
     @Override

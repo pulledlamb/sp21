@@ -88,16 +88,19 @@ public class MemoryGame {
     }
 
     public void flashSequence(String letters) {
+        drawFrame("");
         for (int i = 0; i < letters.length(); i++) {
             drawFrame(letters.substring(i, i + 1));
             StdDraw.pause(700);
             drawFrame("");
             StdDraw.pause(700);
         }
+        playerTurn = true;
     }
 
     public String solicitNCharsInput(int n) {
         StringBuilder sb = new StringBuilder();
+        drawFrame("");
         while (sb.length() < n) {
             if (!StdDraw.hasNextKeyTyped()) {
                 continue;
@@ -112,23 +115,30 @@ public class MemoryGame {
 
     public void startGame(int maxRound) {
         gameOver = false;
-        playerTurn = false;
         round = 1;
 
         while (!gameOver && round <= maxRound) {
             String gameString = generateRandomString(round);
-            flashSequence(gameString);
-
-            playerTurn = true;
-            String playerString = solicitNCharsInput(round);
+            String playerString = "";
+            if (!playerTurn) {
+                flashSequence(gameString);
+            }
+            if (playerTurn) {
+                playerString = solicitNCharsInput(round);
+                playerTurn = false;
+            }
             if (!playerString.equals(gameString)) {
                 gameOver = true;
                 drawFrame("Game Over! You made it to round:" + round);
+                StdDraw.pause(1000);
             } else {
                 drawFrame("Well done!");
                 StdDraw.pause(1000);
                 round += 1;
             }
+        }
+        if (!gameOver) {
+            drawFrame("Congrats. You've won a key.");
         }
     }
 

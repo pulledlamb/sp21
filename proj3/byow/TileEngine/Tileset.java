@@ -33,7 +33,8 @@ public class Tileset {
     public static final TETile SAND = new TETile('▒', Color.yellow, Color.black, "sand");
     public static final TETile MOUNTAIN = new TETile('▲', Color.gray, Color.black, "mountain");
     public static final TETile TREE = new TETile('♠', Color.green, Color.black, "tree");
-    public static final TETile KEY = new TETile('K',Color.YELLOW, Color.BLACK, "key");
+    public static final TETile KEY = new TETile('K', Color.YELLOW, Color.BLACK, "key");
+    public static final TETile REDFLOOR = new TETile('·', Color.RED, Color.BLACK, "red floor");
 }
 
 
