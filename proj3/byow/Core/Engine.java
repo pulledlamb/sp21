@@ -2,20 +2,261 @@ package byow.Core;
 
 import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
+import byow.TileEngine.Tileset;
+import edu.princeton.cs.introcs.StdDraw;
+
+import java.awt.*;
+import java.io.*;
+import java.util.Random;
 
 public class Engine {
     TERenderer ter = new TERenderer();
     /* Feel free to change the width and height. */
     public static final int WIDTH = 80;
-    public static final int HEIGHT = 30;
-
+    public static final int HEIGHT = 40;
+    public static final int SEED = 12345678;
+    public static final int FONTLARGE = 36,
+            FONTMED = 27, FONTSMALL = 24;
+    public static final int SIGHT = 10;
+    public static boolean isGameOver = false;
+    public boolean escaped, loadGame, partial, proj;
+    public static TETile[][] world, partialWorld;
+    long seed;
+    WorldGenerator wg; Player p; Guard g;
     /**
      * Method used for exploring a fresh world. This method should handle all inputs,
      * including inputs from the main menu.
      */
     public void interactWithKeyboard() {
+        init();
+        startGame();
     }
 
+    public void startGame() {
+        StdDraw.clear();
+        ter.initialize(WIDTH, HEIGHT);
+
+        while (!isGameOver) {
+            if (partial) {
+                ter.renderFrame(partialWorld);
+            } else {
+                ter.renderFrame(world);
+            }
+            update();
+
+            if (p.openDoor) {
+                drawBlank("Congratulations! You've escaped the dungeon!");
+                StdDraw.pause(2500);
+                drawInit("");
+                break;
+            }
+        }
+        drawBlank("The guard has caught you.");
+    }
+
+    public void init() {
+        drawInit("");
+        solicitSeed();
+        if (loadGame) {
+            wg = load();
+        } else {
+            wg = new WorldGenerator(WIDTH, HEIGHT, new Random(seed));
+        }
+        isGameOver = false; escaped = false; partial = true; proj = false;
+        world = wg.getWorld(); partialWorld = wg.getPartialWorld();
+        p = new Player(world, WorldGenerator.initPlayer);
+        g = new Guard(world, WorldGenerator.initGuard, p);
+    }
+
+    // sync between the real world and the partial shown world
+    // that is, display only within line of sight of the avatar
+    public void sync() {
+        for (int i = 0; i < WIDTH; i++) {
+            for (int j = 0; j < HEIGHT; j++) {
+                partialWorld[i][j] = Tileset.NOTHING;
+            }
+        }
+        int left = Math.max(p.getPosition().getX() - SIGHT, 0),
+                right = Math.min(p.getPosition().getX() + SIGHT, WIDTH),
+                up = Math.min(p.getPosition().getY() + SIGHT, HEIGHT),
+                down = Math.max(p.getPosition().getY() - SIGHT, 0);
+        for (int i = left; i < right; i++) {
+            if (up - down >= 0) {
+                System.arraycopy(world[i], down,
+                        partialWorld[i], down, up - down);
+            }
+        }
+    }
+
+    public void update() {
+        sync();
+        StringBuilder input = new StringBuilder();
+        if (StdDraw.hasNextKeyTyped()) {
+            char c = StdDraw.nextKeyTyped();
+            g.hunt(proj);
+            if (c == 'Q' || c == 'q') {
+                input.append(c);
+                if (input.toString().contains(":q") ||
+                        input.toString().contains(":Q")) {
+                    save(wg);
+                    System.exit(0);
+                } else if (input.toString().contains("q") ||
+                        input.toString().contains("Q")) {
+                    System.exit(0);
+                }
+            } else if (c == 't') {
+                partial = !partial;
+            } else if (c == ':') {
+                input.append(c);
+            } else if (c == 'W' || c == 'w') {
+                p.movePlayer(0, 1);
+            } else if (c == 'S' || c == 's') {
+                p.movePlayer(0, -1);
+            } else if (c == 'a' || c == 'A') {
+                p.movePlayer(-1, 0);
+            } else if (c == 'D' || c == 'd') {
+                p.movePlayer(1, 0);
+            } else if (c == 'p' || c == 'P') {
+                proj = !proj;
+            }
+        }
+        if (p.atLockedDoor) {
+            displayInfo("Need 3 keys to open.");
+        } else {
+            displayInfo(isMouseOver());
+        }
+    }
+
+    public String isMouseOver() {
+        int x = (int) Math.floor(StdDraw.mouseX()),
+                y = (int) Math.floor(StdDraw.mouseY());
+        if (!isMouseOutofBound(x, y)) {
+            if ((partial && partialWorld[x][y].equals(Tileset.WALL))
+                    || (!partial && world[x][y].equals(Tileset.WALL))) {
+                return "This is WALL.";
+            } else if ((partial && wg.partialWorld[x][y].equals(Tileset.FLOOR))
+                    || (!partial && wg.world[x][y].equals(Tileset.FLOOR))) {
+                return "This is FLOOR.";
+            }
+        }
+        return "Collect 20 flowers to play a game to win a key.";
+    }
+
+    public void displayInfo(String msg) {
+        StdDraw.setPenColor(Color.WHITE);
+        StdDraw.textLeft(1, 1, "# of keys: " + p.keys + "/3");
+        StdDraw.textLeft(11, 1, "# of flowers: " + p.flowers);
+        StdDraw.line(0, 1.8, Engine.WIDTH, 1.8);
+        StdDraw.setPenColor(Color.GREEN);
+        StdDraw.text(WIDTH / 2, 1, msg);
+        StdDraw.show();
+
+    }
+
+    public boolean isMouseOutofBound(int x, int y) {
+        return !(x > 0 && x < WIDTH && y > 0 && y < HEIGHT);
+    }
+
+    public void drawBlank(String s) {
+        StdDraw.clear();
+        StdDraw.clear(Color.BLACK );
+        Font f1 = new Font("Monaco", Font.BOLD, FONTLARGE);
+        StdDraw.setFont(f1);
+        StdDraw.setPenColor(Color.WHITE);
+        StdDraw.setXscale(0, WIDTH);
+        StdDraw.setYscale(0, HEIGHT);
+        StdDraw.text(WIDTH / 2, HEIGHT - 10, "THE GAME");
+        Font f2 = new Font("Monaco", Font.BOLD, FONTMED);
+        StdDraw.setFont(f2);
+        StdDraw.text(WIDTH / 2, HEIGHT / 2, s);
+        StdDraw.show();
+    }
+
+
+    public void drawInit(String s) {
+        StdDraw.clear();
+        StdDraw.clear(Color.BLACK);
+        Font f1 = new Font("Monaco", Font.BOLD, FONTLARGE);
+        StdDraw.setFont(f1);
+        StdDraw.setPenColor(Color.WHITE);
+
+        StdDraw.setXscale(0, WIDTH);
+        StdDraw.setYscale(0, HEIGHT);
+        StdDraw.text(WIDTH / 2, HEIGHT - 10, "THE GAME");
+
+        Font f2 = new Font("Monaco", Font.BOLD, FONTMED);
+        StdDraw.setFont(f2);
+        StdDraw.text(WIDTH / 2, HEIGHT / 2, "New Game (N)");
+        StdDraw.text(WIDTH / 2, HEIGHT / 2 - 3, "Load Game (L)");
+        StdDraw.text(WIDTH / 2, HEIGHT / 2 - 6, "Quit (Q)");
+        Font f3 = new Font("Monaco", Font.BOLD, FONTSMALL);
+        StdDraw.setFont(f3);
+        StdDraw.text(WIDTH / 2, HEIGHT / 2 - 9, s);
+        StdDraw.enableDoubleBuffering();
+        StdDraw.show();
+    }
+
+    public void solicitSeed() {
+        StringBuilder input = new StringBuilder();
+        while (true) {
+            try {
+                if (StdDraw.hasNextKeyTyped()) {
+                    char c = StdDraw.nextKeyTyped();
+                    if (c == 'S' || c == 's') {
+                        seed = Long.parseLong(input.toString());
+                        break;
+                    } else if (c == 'N' || c == 'n') {
+                        drawInit("Enter seed: ");
+                    } else if (c == 'L' || c == 'l') {
+                        loadGame = true;
+                    } else {
+                        input.append(c);
+                        drawInit("Enter seed: " + input);
+                    }
+                }
+            } catch (Exception e) {
+                drawInit("Error! Please enter a valid number!");
+                StdDraw.pause(1000);
+                drawInit("Enter seed: ");
+                input = new StringBuilder();
+            }
+        }
+    }
+
+    public WorldGenerator load() {
+        File f = new File("./saved_data");
+        if (f.exists()) {
+            try {
+                FileInputStream fs = new FileInputStream(f);
+                ObjectInputStream os = new ObjectInputStream(fs);
+                return (WorldGenerator) os.readObject();
+            } catch (IOException e) {
+                System.out.println(e);
+                System.exit(0);
+            } catch (ClassNotFoundException e) {
+                System.out.println("Class not found");
+                System.exit(0);
+            }
+        }
+
+        /* In the case no Editor has been saved yet, we return a new one. */
+        return new WorldGenerator(WIDTH, HEIGHT, new Random(SEED));
+    }
+
+    public void save(WorldGenerator wg) {
+        File f = new File("./saved_data");
+        try {
+            if (!f.exists()) {
+                f.createNewFile();
+            }
+            FileOutputStream fs = new FileOutputStream(f);
+            ObjectOutputStream os = new ObjectOutputStream(fs);
+            os.writeObject(wg);
+        } catch (IOException e) {
+            System.out.println(e);
+            System.exit(0);
+        }
+    }
     /**
      * Method used for autograding and testing your code. The input string will be a series
      * of characters (for example, "n123sswwdasdassadwas", "n123sss:q", "lwww". The engine should
