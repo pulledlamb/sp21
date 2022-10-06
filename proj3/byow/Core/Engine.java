@@ -55,7 +55,7 @@ public class Engine {
     }
 
     public void init() {
-        drawInit("");
+       // drawInit("");
         solicitSeed();
         if (loadGame) {
             wg = load();
