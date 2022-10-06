@@ -55,7 +55,7 @@ public class Engine {
     }
 
     public void init() {
-       // drawInit("");
+        drawInit("");
         solicitSeed();
         if (loadGame) {
             wg = load();
@@ -65,6 +65,18 @@ public class Engine {
         isGameOver = false; escaped = false; partial = true; proj = false;
         world = wg.getWorld(); partialWorld = wg.getPartialWorld();
         p = new Player(world, WorldGenerator.initPlayer);
+        g = new Guard(world, WorldGenerator.initGuard, p);
+    }
+
+    public void init(long s) {
+        if (loadGame) {
+            wg = load();
+        } else {
+            wg = new WorldGenerator(WIDTH, HEIGHT, new Random(s));
+        }
+        isGameOver = false; escaped = false; partial = true; proj = false;
+        world = wg.getWorld(); partialWorld = wg.getPartialWorld();
+        p = new Player(world, WorldGenerator.initGuard);
         g = new Guard(world, WorldGenerator.initGuard, p);
     }
 
@@ -287,8 +299,8 @@ public class Engine {
         // See proj3.byow.InputDemo for a demo of how you can make a nice clean interface
         // that works for many different input types.
 
-        seed = Long.parseLong(input.substring(1, input.length() - 1));
-        init();
+        long s = Long.parseLong(input.substring(1, input.length() - 1));
+        init(s);
         TETile[][] finalWorldFrame = world;
         return finalWorldFrame;
     }
