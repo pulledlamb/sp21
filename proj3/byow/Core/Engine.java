@@ -78,6 +78,14 @@ public class Engine {
         g = new Guard(world, WorldGenerator.initGuard, p);
     }
 
+    public void init(long s) {
+        wg = new WorldGenerator(WIDTH, HEIGHT, new Random(seed));
+        isGameOver = false; escaped = false; partial = true; proj = false;
+        world = wg.getWorld(); partialWorld = wg.getPartialWorld();
+        p = new Player(world, WorldGenerator.initPlayer);
+        g = new Guard(world, WorldGenerator.initGuard, p);
+    }
+
     public void update() {
         if (inputSource.possibleNextInput()) {
             actions(inputSource.getNextKey());
@@ -279,6 +287,7 @@ public class Engine {
             return null;
         }
         parseSeed(input);
+        init(0);
 
         input = input.replaceAll("n([0-9])+s", "");
         inputSource = new StringInputDevice(input);
@@ -291,8 +300,10 @@ public class Engine {
     }
 
     private void parseSeed(String input) {
-        Pattern p = Pattern.compile("([0-9]+)");
-        Matcher m = p.matcher(input);
-        seed = Long.parseLong(m.group(1));
+        Pattern pattern = Pattern.compile("([0-9]+)");
+        Matcher m = pattern.matcher(input);
+        if (m.find()) {
+            seed = Long.parseLong(m.group(1));
+        }
     }
 }
