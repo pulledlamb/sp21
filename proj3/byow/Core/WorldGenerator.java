@@ -3,10 +3,11 @@ package byow.Core;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class WorldGenerator {
+public class WorldGenerator implements Serializable {
     public static final int FLOWER = 4, KEYS = 3;
     int width, height;
     Room initialRoom;
