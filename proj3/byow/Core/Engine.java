@@ -294,7 +294,6 @@ public class Engine {
 
         while (inputSource.possibleNextInput()) {
             char nextKey = inputSource.getNextKey();
-            System.out.println(nextKey);
             actions(nextKey);
         }
         return world;
