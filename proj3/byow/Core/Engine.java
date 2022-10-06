@@ -22,7 +22,7 @@ public class Engine {
             FONTMED = 27, FONTSMALL = 24;
     public static final int SIGHT = 10;
     static boolean isGameOver = false;
-    boolean escaped, loadGame, partial, proj;
+    boolean escaped, partial, proj;
     static TETile[][] world, partialWorld;
     long seed;
     WorldGenerator wg; Player p; Guard g;
@@ -282,7 +282,7 @@ public class Engine {
         // See proj3.byow.InputDemo for a demo of how you can make a nice clean interface
         // that works for many different input types.
 
-        if (!input.matches("^[0-9a-zA-Z]+$")) {
+        if (!input.matches("^[0-9a-zA-Z:]+$")) {
             System.out.println("Wrong input!");
             return null;
         }

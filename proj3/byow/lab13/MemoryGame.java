@@ -1,6 +1,5 @@
 package byow.lab13;
 
-import byow.Core.Engine;
 import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.Color;
@@ -46,7 +45,7 @@ public class MemoryGame {
         this.width = width;
         this.height = height;
         StdDraw.setCanvasSize(this.width * 16, this.height * 16);
-        Font font = new Font("Monaco", Font.BOLD, Engine.FONTLARGE);
+        Font font = new Font("Monaco", Font.BOLD, 30);
         StdDraw.setFont(font);
         StdDraw.setXscale(0, this.width);
         StdDraw.setYscale(0, this.height);

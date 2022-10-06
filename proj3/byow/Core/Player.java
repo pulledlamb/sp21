@@ -3,9 +3,7 @@ package byow.Core;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 import byow.lab13.MemoryGame;
-import edu.princeton.cs.introcs.StdDraw;
 
-import java.awt.*;
 import java.util.Random;
 
 public class Player extends Creature {
