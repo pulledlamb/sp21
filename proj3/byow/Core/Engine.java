@@ -287,7 +287,9 @@ public class Engine {
         // See proj3.byow.InputDemo for a demo of how you can make a nice clean interface
         // that works for many different input types.
 
-        TETile[][] finalWorldFrame = null;
+        seed = Long.parseLong(input.substring(1, input.length() - 1));
+        init();
+        TETile[][] finalWorldFrame = world;
         return finalWorldFrame;
     }
 }
